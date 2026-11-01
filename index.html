@@ -95,6 +95,8 @@ footer a{margin-right:14px}
 .r{position:relative;padding-right:40px}.r .fv{position:absolute;right:0;top:8px}
 .fv{border:0;background:none;min-height:36px;min-width:36px;padding:0;font-size:20px;line-height:1;color:var(--fg)}h2 .fv{vertical-align:middle}
 .vw .back,.vw #ft,.vw #bl{display:none}
+.ep{display:grid;grid-template-columns:84px 1fr;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--ln)}.ep .d{font:12px/1.9 ui-monospace,Menlo,Consolas,monospace;color:var(--mu)}.ep .w{font-size:14px;line-height:1.8}.ep .w b{border-bottom:2px solid var(--fg)}.ep .b{margin-left:0;margin-right:6px}
+.yh{margin:18px 0 0;font-size:12px;letter-spacing:.2em;color:var(--mu);border-bottom:1px solid var(--fg);padding-bottom:3px;font-weight:600}
 </style>
 </head>
 <body>
@@ -135,9 +137,13 @@ const rt=()=>{const b=$('.tabs');if(b)b.scrollLeft=0};
 const copy=async s=>{try{await navigator.clipboard.writeText(s);toast('コピーしました')}catch(x){prompt('コピーしてください',s)}};
 const dinfo=i=>[['配布',i.o],['配布方法',i.m],['画質',i.q],['交換比率',i.r]].filter(a=>a[1]).map(a=>`<div class="ro"><b>${a[0]}</b>${e(a[1])}</div>`).join('');
 const DR=/(\d{4})[.\/\-年](\d{1,2})[.\/\-月](\d{1,2})日?/;
+const csvSplit=l=>{const o=[];let c='',q=0;for(const ch of l){if(ch=='"')q=!q;else if(ch==','&&!q){o.push(c);c=''}else c+=ch}o.push(c);return o};
+function rowK(p){p=p.map(a=>a.trim());const m=p[0].match(DR);
+ if(m&&m.index==0&&p[0].replace(DR,'').trim()==''&&!DR.test(p[1]||'')){const d=m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');return[d,d,'放送回',[p[1]?'出演者: '+p[1]:'',p[2]||''].filter(Boolean).join(' / ')]}
+ return[p[0]||'',p[1]||'',p[2]||'',p[3]||'']}
 function parseK(tx){const o=[];let c=null;
- tx.split(/\r?\n/).forEach(l=>{l=l.trim();if(!l)return;
-  if(/[|\t]/.test(l)){const p=l.split(/[|\t]/).map(a=>a.trim());o.push([p[0]||'',p[1]||'',p[2]||'',p[3]||'']);c=null;return}
+ tx.split(/\r?\n/).forEach(l=>{l=l.trim();if(!l||/^アイテム名/.test(l))return;
+  if(/[|\t]/.test(l)||/^\d{4}[.\/\-]\d{1,2}[.\/\-]\d{1,2}\s*,/.test(l)){o.push(rowK(/[|\t]/.test(l)?l.split(/[|\t]/):csvSplit(l)));c=null;return}
   const h=l.replace(/^#+\s*/,''),m=h.match(DR);
   if(m&&m.index==0){const d=m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');c=[d,d,'放送回',h.slice(m[0].length).replace(/^[\s　:：,，]+/,'')];o.push(c)}
   else if(c)c[3]=(c[3]?c[3]+' / ':'')+h;
@@ -150,11 +156,14 @@ const wsF=()=>f.w.flatMap(w=>D.groups[w]||[w]).map(a=>a.toLowerCase());
 function hitK(i){const q=f.q.toLowerCase().split(/\s+/).filter(Boolean),ws=wsF();if(!q.length&&!ws.length)return'';
  const h=i.k.filter(k=>{const s=k.join(' ').toLowerCase();return q.every(w=>s.includes(w))&&(!ws.length||ws.some(w=>s.includes(w)))});
  return h.length?'　<b>該当 '+h.length+'回</b>'+(h.length<=5?'：'+h.map(k=>e(k[1]||k[0])).join('、'):''):''}
-function klist(i){const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),r=i.k.filter(k=>{const s=k.join(' ').toLowerCase();return q.every(w=>s.includes(w))});
- return(q.length?`<p class="hint">${r.length}回</p>`:'')+r.slice(0,KL).map(kh).join('')+(r.length>KL?`<p><button data-a="kmore">さらに表示（残り${r.length-KL}件）</button></p>`:'')}
-function kbox(i){const c={};i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>c[a]=(c[a]||0)+1)});
- const ch=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,40);
- return`<h4>収録内容 ${i.k.length}件</h4><div class="fg"><input id="kq" placeholder="名前・日付で絞り込み" value="${e(KQ)}"></div>${ch.length?`<div style="margin-top:8px">${ch.map(a=>`<button class="chip" data-kq="${e(a[0])}">${e(a[0])}<i>${a[1]}</i></button>`).join('')}</div>`:''}<div id="kl">${klist(i)}</div>`}
+let QW=new Set();
+const perf=i=>{const c={};i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>c[a]=(c[a]||0)+1)});return c};
+const qchips=i=>{const c=perf(i);QW.forEach(a=>c[a]=c[a]||0);return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,60).map(a=>`<button type="button" class="chip ${QW.has(a[0])?'on':''}" data-qw="${e(a[0])}">${e(a[0])}</button>`).join('')};
+function klist(i){const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),r=i.k.filter(k=>{const s=k.join(' ').toLowerCase();return q.every(w=>s.includes(w))});let y='',h='';
+ r.slice(0,KL).forEach(k=>{const d=k[1]||k[0],yy=/^\d{4}[-.]/.test(d)?d.slice(0,4):'';if(yy&&yy!=y&&r.length>12){y=yy;h+=`<div class="yh">${yy}</div>`}h+=kh(k)});
+ return(q.length?`<p class="hint">${r.length}回</p>`:'')+h+(r.length>KL?`<p><button data-a="kmore">さらに表示（残り${r.length-KL}件）</button></p>`:'')}
+function kbox(i){const c=perf(i),ch=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,60);if(!ch.length)KQ='';
+ return`<h4>収録内容 ${i.k.length}件</h4>${ch.length?`<div class="fg"><input id="kq" placeholder="名前・日付で絞り込み" value="${e(KQ)}"></div><details style="margin-top:8px"><summary class="hint" style="cursor:pointer">出演者から選ぶ（${Object.keys(c).length}人）</summary><div style="margin-top:6px">${ch.map(a=>`<button class="chip" data-kq="${e(a[0])}">${e(a[0])}<i>${a[1]}</i></button>`).join('')}</div></details>`:''}<div id="kl">${klist(i)}</div>`}
 function inst(){if(DP){DP.prompt();DP=null}else if(matchMedia('(display-mode:standalone)').matches||navigator.standalone)toast('すでにホーム画面から開いています');else alert(/iPhone|iPad|iPod/.test(navigator.userAgent)?'Safariの共有ボタン（□↑）から「ホーム画面に追加」を選んでください':'ブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選んでください')}
 /* ================= Supabase（ログイン・保存） ================= */
 const sb=(p,o={})=>fetch(C.url+p,{method:o.method||'GET',body:o.body,headers:{apikey:C.key,'Content-Type':'application/json',...((o.tk||!/^sb_/.test(C.key))?{Authorization:'Bearer '+(o.tk||C.key)}:{}),...(o.h||{})}});
@@ -244,7 +253,7 @@ function pList(k){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&L.g.includes
  `<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?base.length:base.filter(i=>i.g==t).length}</i></button>`).join('')}</div>
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
  <p class="hint">${rows.length?rows.length+'件　行をタップで詳細':''}${ed?'　編集モード：行をタップで編集':''}</p>
- ${S&&k=='have'&&!VW?`<p class="row" style="margin:0 0 6px"><button data-a="sh">所持リストの共有リンクをコピー</button></p>`:''}
+ 
  ${ed?`<p><button data-a="add">＋この一覧に追加</button></p>`:''}${h||'<p class="empty">該当するものがありません</p>'}${rows.length>lim?'<p><button id="mo">もっと見る</button></p>':''}`}
 
 /* ================= 描画 ================= */
@@ -268,8 +277,11 @@ addEventListener('keydown',t=>{if(t.key=='Escape')closeSheet();if(t.key=='Enter'
 function sheet(h){$('#pn').innerHTML=h;$('#sh').className='on'}
 const closeSheet=()=>{if($('#sh').className){$('#sh').className='';render()}};
 const xbtn=t=>`<p style="text-align:right;margin:0"><button data-a="cl">${t||'閉じる'}</button></p>`;
-const kh=k=>`<div class="k">${e(k[0])}<small>${[k[1]==k[0]?'':k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`;
-function detail(n){if(ed)return form(n);const i=D.items[n];KI=n;KL=80;KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
+const kh=k=>{const d=k[1]||k[0],m=(k[3]||'').split(' / '),w=/^出演者[:：]/.test(m[0])?m.shift().replace(/^出演者[:：]\s*/,'').split(/[,、，]\s*/):null;
+ if(!w||!DR.test(d))return`<div class="k">${e(k[0])}<small>${[k[1]==k[0]?'':k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`;
+ const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),hl=n=>q.some(t=>n.toLowerCase().includes(t))?`<b>${e(n)}</b>`:e(n);
+ return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}${w.map(hl).join('、')}</span></div>`}
+function detail(n){if(ed)return form(n);const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
  sheet(`${xbtn()}<div class="gl">${e(i.g)}</div><h2><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button> ${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function form(n){const i=D.items[n];
@@ -286,8 +298,14 @@ function form(n){const i=D.items[n];
  <label>配布方法（例：Googleドライブ／DM／郵送）</label><input data-e="m" value="${e(i.m)}">
  <label>画質（例：1080p／720p／DVD画質／音声のみ）</label><input data-e="q" value="${e(i.q)}">
  <label>交換比率（例：1:1／2:1）</label><input data-e="r" value="${e(i.r)}">
- <label>収録内容（1行1件。「2016-04-03 メモ」や、見出し行＋出演者行のメモ書きもそのまま貼れます。従来の タイトル|日付|種別|メモ も可）</label><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea>
- <div class="row" style="margin-top:8px"><input type="file" id="kf" accept=".md,.txt,.csv" multiple hidden><button data-a="kf">ファイルから収録内容を追加（.md/.txt）</button></div><div class="row"><button data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
+ <h4 style="margin-top:22px">収録内容 ${i.k.length}件</h4>
+ <div class="lkrow"><label>日付</label><input type="date" id="qd">
+ <label>出演者（タップで選択・複数可）</label><div>${qchips(i)}</div><input id="qx" placeholder="新しい名前（カンマ区切りで追加）" style="margin-top:6px">
+ <label>備考（任意：1時間SPなど）</label><input id="qn">
+ <div class="row"><button class="on" data-a="qadd">この回を追加</button></div></div>
+ <div class="row"><input type="file" id="kf" accept=".md,.txt,.csv" multiple hidden><button data-a="kf">ファイルから追加（.csv/.md/.txt）</button></div>
+ <details style="margin-top:12px"><summary class="hint" style="cursor:pointer">全件をテキストで編集・削除（貼り付け可）</summary><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea></details>
+ <div class="row"><button data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
 function filt(){const L=LISTS[route()];if(!L)return;
  const ws=Object.keys(D.groups),inG=new Set(ws.flatMap(g=>D.groups[g])),rest={};
  D.items.forEach(i=>i.w.forEach(w=>{if(!D.groups[w]&&!inG.has(w))rest[w]=1}));
@@ -300,7 +318,7 @@ function filt(){const L=LISTS[route()];if(!L)return;
  ${L.l=='have'?`<h4>配布</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div>`:''}
  <div class="row"><button data-a="rs">リセット</button><button class="on" data-a="cl">結果を見る</button></div>`)}
 function adminMenu(){
- sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="lo">ログアウト</button></div>
+ sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
  <label>グループとメンバー（1行に1グループ　「グループ名：メンバー,メンバー」）</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div>
  <div class="row"><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・LINK・免責事項・お知らせを直接編集できます。</p>'}`}`)}
@@ -313,6 +331,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  const x=t.target.closest('button,span,a,.r')||t.target,d=x.dataset||{};
  if(d.fv!==undefined){const i=D.items[+d.fv];togF(i);x.textContent=isF(i)?'★':'☆';render()}
  else if(d.kq!==undefined){KQ=d.kq;$('#kq').value=KQ;KL=80;$('#kl').innerHTML=klist(D.items[KI])}
+ else if(d.qw!==undefined){QW.has(d.qw)?QW.delete(d.qw):QW.add(d.qw);x.classList.toggle('on')}
  else if(d.pw!==undefined)setF(d.pw);
  else if(d.w!==undefined)setF(d.w);
  else if(d.tab!==undefined){tab=d.tab;lim=60;render()}
@@ -322,7 +341,8 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.t){const[k,v]=d.t.split('|'),a=f[k],j=a.indexOf(v);j<0?a.push(v):a.splice(j,1);x.classList.toggle('on')}
  else if(d.pick!==undefined){const i=D.items[+$('#pn').dataset.n],j=i.w.indexOf(d.pick);j<0?i.w.push(d.pick):i.w.splice(j,1);x.classList.toggle('on');$('#wi').value=i.w.join(',');dirty=true}
  else if(d.a=='cl')closeSheet();
- else if(d.a=='kf')$('#kf').click();else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='ins')inst();
+ else if(d.a=='kf')$('#kf').click();
+ else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value;if(!dt){toast('日付を選んでください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[dt,dt,'放送回',(ws.length?'出演者: '+ws.join(', '):'')+(nt?(ws.length?' / ':'')+nt:'')]]);mk();form(n);toast(dt+' を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
