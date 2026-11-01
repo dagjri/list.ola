@@ -120,7 +120,7 @@ const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clea
 const linkify=s=>e(s).replace(/https?:\/\/[^\s<>"']+/g,u=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
 
 /* ================= Supabase（ログイン・保存） ================= */
-const sb=(p,o={})=>fetch(C.url+p,{method:o.method||'GET',body:o.body,headers:{apikey:C.key,'Content-Type':'application/json',Authorization:'Bearer '+(o.tk||C.key),...(o.h||{})}});
+const sb=(p,o={})=>fetch(C.url+p,{method:o.method||'GET',body:o.body,headers:{apikey:C.key,'Content-Type':'application/json',...((o.tk||!/^sb_/.test(C.key))?{Authorization:'Bearer '+(o.tk||C.key)}:{}),...(o.h||{})}});
 const ses=j=>{S={a:j.access_token,r:j.refresh_token,exp:Date.now()/1000+j.expires_in};try{localStorage.setItem(SK,JSON.stringify(S))}catch(x){}};
 async function tok(){if(!S)return null;if(S.exp<Date.now()/1000+60){try{const r=await sb('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:S.r})});if(!r.ok){out();return null}ses(await r.json())}catch(x){return null}}return S.a}
 function out(){S=null;ed=false;dirty=false;try{localStorage.removeItem(SK)}catch(x){}}
