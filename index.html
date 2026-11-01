@@ -86,13 +86,17 @@ footer a{margin-right:14px}
 .fg label{display:block;font-size:12px;color:var(--mu);margin-top:12px}.fg input,.fg select,.fg textarea{width:100%}.fg textarea{min-height:130px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .lkrow{border:1px solid var(--ln);padding:10px;margin:0 0 10px}.lkrow input{width:100%;margin-bottom:6px}
+.ld{display:flex;align-items:center;justify-content:center;gap:12px;padding:90px 0;color:var(--mu);font-size:13px;letter-spacing:.08em}
+.ld i{width:18px;height:18px;border:2px solid var(--ln);border-top-color:var(--fg);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.ld i{animation-duration:3s}}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;font-size:13px;z-index:20;display:none}
 </style>
 </head>
 <body>
 <header><div class="in bar"><a href="#/" id="brand">list.ola</a><nav><button class="ghost" id="bs" hidden>検索</button><button class="ghost" id="bl" hidden>ログイン</button></nav></div></header>
 <div id="eb" hidden><div class="in"><span id="ebt"></span><button id="sv">保存</button><button id="ex">編集を終了</button></div></div>
-<main class="in" id="app"></main>
+<main class="in" id="app"><div class="ld" role="status"><i></i>読み込み中…</div></main>
 <footer class="in" id="ft"></footer>
 <div id="sh"><div id="pn"></div></div>
 <div id="toast"></div>
@@ -122,7 +126,8 @@ const sb=(p,o={})=>fetch(C.url+p,{method:o.method||'GET',body:o.body,headers:{ap
 const ses=j=>{S={a:j.access_token,r:j.refresh_token,exp:Date.now()/1000+j.expires_in};try{localStorage.setItem(SK,JSON.stringify(S))}catch(x){}};
 async function tok(){if(!S)return null;if(S.exp<Date.now()/1000+60){try{const r=await sb('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:S.r})});if(!r.ok){out();return null}ses(await r.json())}catch(x){return null}}return S.a}
 function out(){S=null;ed=false;dirty=false;try{localStorage.removeItem(SK)}catch(x){}}
-async function saveDB(){const t=await tok();if(!t){alert('ログインが切れました。もう一度ログインしてください');render();return}
+async function saveDB(){const sv=$('#sv');sv.disabled=true;sv.textContent='保存中…';try{await saveDB2()}finally{sv.textContent='保存';sv.disabled=!dirty}}
+async function saveDB2(){const t=await tok();if(!t){alert('ログインが切れました。もう一度ログインしてください');render();return}
  try{const r=await sb('/rest/v1/archive?on_conflict=id',{method:'POST',h:{Prefer:'resolution=merge-duplicates,return=minimal'},tk:t,body:JSON.stringify({id:1,data:D})});
   if(r.ok){dirty=false;render();toast('保存しました')}else alert('保存できませんでした（編集できるのは管理者だけです）')}
  catch(x){alert('通信に失敗しました。時間をおいてもう一度お試しください')}}
@@ -275,7 +280,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
- else if(d.a=='pw'){em=$('#em').value.trim();try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else alert('メールアドレスかパスワードが違います')}catch(z){alert('通信に失敗しました')}}
+ else if(d.a=='pw'){em=$('#em').value.trim();x.disabled=true;x.textContent='確認中…';try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else alert('メールアドレスかパスワードが違います')}catch(z){alert('通信に失敗しました')}if(x.isConnected){x.disabled=false;x.textContent='ログイン'}}
  else if(d.a=='lo'){out();closeSheet();render()}
  else if(d.a=='bk'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='data-'+new Date().toISOString().slice(0,10)+'.json';a.click()}
  else if(d.a=='add'){const L=LISTS[route()];D.items.unshift({t:'新規',g:tab!='すべて'?tab:L.g[0],s:'',w:[],n:'',o:'所持',y:'',k:[],l:L.l});dirty=true;form(0)}
