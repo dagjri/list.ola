@@ -168,18 +168,10 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 main.in,footer.in{width:100%}main.in{flex:1 0 auto}
 body.tp main.in{display:flex;flex-direction:column;justify-content:center;min-height:0;padding-top:24px;padding-bottom:24px}
 body.tp footer.in{padding-bottom:24px}
-.hl{font-size:13px;padding:6px 8px;text-decoration:none;white-space:nowrap}
+.bar nav{align-items:center;gap:0}.bar nav>*{font-size:14px;line-height:1.2;min-height:36px;padding:0 8px;display:inline-flex;align-items:center;white-space:nowrap}
+.hl{text-decoration:none;color:var(--fg)}
 .vw .hl{display:none}
-.mbs{display:grid;gap:18px;padding:0 8px 8px 0}
-.mb{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:76px;padding:14px 16px;border:2px solid var(--fg);text-decoration:none;isolation:isolate;background:transparent}
-.mb::after{content:'';position:absolute;inset:6px -6px -6px 6px;border:2px solid var(--fg);z-index:-1;pointer-events:none}
-.mb .mt{min-width:0}.mb b{display:block;font-size:19px;font-weight:800;letter-spacing:.04em;line-height:1.35;word-break:break-word}
-.mb small{display:block;color:var(--mu);font-size:12px;line-height:1.5;margin-top:2px}
-.mb .ic{flex:none;width:46px;height:46px;border-radius:12px;background:var(--fg);color:var(--bg);display:grid;place-items:center}
-.mb.sm{min-height:60px;padding:10px 14px}.mb.sm b{font-size:16px}.mb.sm .ic{width:38px;height:38px;border-radius:10px}
-.mb:active{background:var(--fg);color:var(--bg)}.mb:active small{color:var(--bg)}.mb:active .ic{background:var(--bg);color:var(--fg)}
-@media(hover:hover){.mb:hover{background:var(--soft)}}
-.nr{margin:0}.nc{display:flex;gap:8px;margin:12px 6px 0 0}.nc button{min-height:30px;padding:2px 12px;font-size:13px}
+.nc{display:flex;gap:8px;margin:6px 0 4px}.nc button{min-height:30px;padding:2px 12px;font-size:13px}
 .gtabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:6px;margin:10px 0 8px}.gtabs::-webkit-scrollbar{display:none}
 .gtabs button{white-space:nowrap;min-height:0;padding:4px 14px;font-size:14px;border-color:var(--bd)}.gtabs button.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:700}
 .dl{margin:0 0 18px}.dl h4{margin-top:0}.dlb{display:grid;gap:8px}
@@ -302,7 +294,7 @@ function fnd(id,a=D.notes,p=null){for(const n of a){if(n.id==id)return{n,p,a};co
 
 /* ================= データ ================= */
 function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};d.links=x.links||[];d.notes=nn(x.notes);
- d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(!OWN.includes(i.o))i.o='';if(!EXO.includes(i.ex))i.ex='';if(VW){i.r='';i.c=''}return i});if(SHK){d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));LISTS.have.g=GENRES.filter(g=>d.items.some(i=>i.g==g))}return d}
+ d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(!OWN.includes(i.o))i.o='';if(!EXO.includes(i.ex))i.ex='';if(VW){i.r='';i.c='';i.o='';i.m=''}return i});if(SHK){d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));LISTS.have.g=GENRES.filter(g=>d.items.some(i=>i.g==g))}return d}
 async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
  let raw=null;
  if(C.url){try{const j=await(await sb('/rest/v1/archive?id=eq.1&select=data')).json();if(j&&j[0])raw=j[0].data}catch(x){}}
@@ -324,28 +316,27 @@ function match(i,L,useTab){return inL(i,L)&&L.g.includes(i.g)&&(!useTab||tab=='�
 const head=(h,sub,back)=>`<a class="back" href="${back||'#/'}">← ${back?'戻る':'トップ'}</a><h1>${e(h)}</h1>${sub?`<p class="sub">${e(sub)}</p>`:''}`;
 const cnt=k=>{const L=LISTS[k];return D.items.filter(i=>inL(i,L)&&L.g.includes(i.g)).length};
 
-const IC={must:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>',have:'<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',want:'<path d="M12 3l2.4 6.1L21 12l-6.6 2.9L12 21l-2.4-6.1L3 12l6.6-2.9z"/>',fav:'<path d="M12 3.5l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17.3 6.6 20.2l1.1-6.1L3.2 9.9l6.1-.8z"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',note:'<path d="M9 6l6 6-6 6"/>'};
-const ico=k=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
-const mbH=(href,t,sub,k,sm)=>`<a class="mb${sm?' sm':''}" href="${href}"><span class="mt"><b>${e(t)}</b>${sub?`<small>${e(sub)}</small>`:''}</span><span class="ic">${ico(k)}</span></a>`;
+const menuH=a=>`<ul class="menu">${a.map((m,x)=>`<li><a href="${m[0]}"><span class="no">${String(x+1).padStart(2,'0')}</span><b>${e(m[1])}</b><span class="ct">${e(m[3]||'')}</span>${m[2]?`<small>${e(m[2])}</small>`:''}</a>${m[4]||''}</li>`).join('')}</ul>`;
 function pTop(){
- const menu=[['#/must','必読','ご利用の前にお読みください','must'],['#/have',LISTS.have.n,cnt('have')+'件','have'],['#/want',LISTS.want.n,cnt('want')+'件','want'],['#/fav','お気に入り',cnt('fav')+'件　この端末に保存','fav'],['#/search','検索','題名・出演者・内容から探す','search']];
+ const menu=[['#/must','必読','ご利用の前にお読みください',''],['#/have',LISTS.have.n,'ドラマ・映画・バラエティ・ライブ・円盤・音源など　ジャンル別',cnt('have')+'件'],['#/want',LISTS.want.n,LISTS.want.d,cnt('want')+'件'],['#/fav','お気に入り','ログイン不要・この端末に保存',cnt('fav')+'件'],['#/search','検索','題名・出演者・内容から探す','']];
  return `${ed?`<div class="fg"><label>お知らせ（空にすると非表示）</label><textarea data-nt style="min-height:80px;margin-bottom:20px">${e(D.notice)}</textarea></div>`:D.notice?`<div class="box"><b>お知らせ</b>${e(D.notice)}</div>`:''}
- <div class="mbs">${menu.map(m=>mbH(m[0],m[1],m[2],m[3])).join('')}</div>`}
+ ${menuH(menu)}`}
 
-const nlist=(arr,pid)=>arr.map((n,x)=>`<div class="nr">${mbH('#/n/'+n.id,n.t||'（無題）',n.c.length?n.c.length+'件':'','note',1)}${ed?`<div class="nc"><button data-na="up" data-id="${n.id}" ${x?'':'disabled'}>↑</button><button data-na="dn" data-id="${n.id}" ${x<arr.length-1?'':'disabled'}>↓</button><button data-na="rm" data-id="${n.id}">削除</button></div>`:''}</div>`).join('')+(ed?`<p style="margin:0"><button data-na="add" data-id="${pid}">＋ノートを追加</button></p>`:'');
+const nlist=(arr,pid)=>menuH(arr.map((n,x)=>['#/n/'+n.id,n.t||'（無題）','',n.c.length?n.c.length+'件':'',ed?`<div class="nc"><button data-na="up" data-id="${n.id}" ${x?'':'disabled'}>↑</button><button data-na="dn" data-id="${n.id}" ${x<arr.length-1?'':'disabled'}>↓</button><button data-na="rm" data-id="${n.id}">削除</button></div>`:'']))+(ed?`<p style="margin:0"><button data-na="add" data-id="${pid}">＋ノートを追加</button></p>`:'');
 function pMust(){const v=D.pages.must||'';
  return head('必読','')+(ed?`<div class="fg"><label>はじめに（任意）</label><textarea data-pg="must" style="min-height:110px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。下のボタンから、見出しごとのノートを増やせます。</p>`:v.trim()?`<div class="pg" style="margin:0 0 20px">${linkify(v)}</div>`:'')
- +(D.notes.length||ed?`<div class="mbs">${nlist(D.notes,'')}</div>`:v.trim()?'':'<p class="empty">まだ書かれていません</p>')}
+ +(D.notes.length||ed?nlist(D.notes,''):v.trim()?'':'<p class="empty">まだ書かれていません</p>')}
 function pNote(id){const r=fnd(id);if(!r)return head('ノートが見つかりません','');const n=r.n,pt=r.p;
  return `<a class="back" href="${pt?'#/n/'+pt.id:'#/must'}">← ${e(pt?(pt.t||'戻る'):'必読')}</a><h1>${e(n.t||'（無題）')}</h1>`
  +(ed?`<div class="fg"><label>タイトル（例：◎交換について）</label><input data-ntt="${n.id}" value="${e(n.t)}"><label>本文</label><textarea data-nb="${n.id}" style="min-height:220px">${e(n.b)}</textarea></div><p class="hint">URL はそのままリンクになります。</p>`:n.b.trim()?`<div class="pg" style="margin:8px 0 20px">${linkify(n.b)}</div>`:'')
- +(n.c.length||ed?`<div class="mbs" style="margin-top:14px">${nlist(n.c,n.id)}</div>`:'')
+ +(n.c.length||ed?`<div style="margin-top:14px">${nlist(n.c,n.id)}</div>`:'')
  +(ed?`<div class="row"><button class="dng" data-na="rm" data-id="${n.id}">このノートを削除</button></div>`:'')}
 function pSearch(){
  return head('検索','')+`<div class="row" style="margin:0 0 10px"><button class="${SS=='have'?'on':''}" data-ss="have">${e(LISTS.have.n)}</button><button class="${SS=='want'?'on':''}" data-ss="want">${e(LISTS.want.n)}</button></div>
  <div class="sq"><input id="lq" type="search" enterkeyhint="search" autocomplete="off" placeholder="題名・出演者・内容で検索" value="${e(f.q)}"><button type="button" data-a="flt">絞り込み</button></div><div id="lb">${lbody(SS,1)}</div>`}
-const linksH=()=>{if(!VW||SHK)return'';const a=(D.links||[]).filter(l=>/^https?:\/\//.test((l.u||'').trim()));
- return a.length?`<div class="dl"><h4>ダウンロード・共有リンク</h4><div class="dlb">${a.map(l=>`<a class="dlk" href="${e(l.u.trim())}" target="_blank" rel="noopener noreferrer"><span><b>${e(l.t||l.u)}</b>${l.d?`<small>${e(l.d)}</small>`:''}</span><span aria-hidden="true">↗</span></a>`).join('')}</div></div>`:''};
+const linkU=u=>{u=String(u||'').trim();if(/^https?:\/\//i.test(u))return u;if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(u))return'https://'+u;return''};
+const linksH=()=>{if(!VW||SHK)return'';const a=(D.links||[]).map(l=>({...l,u:linkU(l.u)})).filter(l=>l.u);
+ return a.length?`<div class="dl"><h4>ダウンロード・共有リンク</h4><div class="dlb">${a.map(l=>`<a class="dlk" href="${e(l.u)}" target="_blank" rel="noopener noreferrer"><span><b>${e(l.t||l.u)}</b>${l.d?`<small>${e(l.d)}</small>`:''}</span><span aria-hidden="true">↗</span></a>`).join('')}</div></div>`:''};
 function ppHtml(){const ch=(v,t)=>`<button type="button" class="chip ${f.w.includes(v)?'on':''}" data-t="w|${e(v)}">${e(t||v)}<i>${cntW(v)}</i></button>`;
  const gs=Object.keys(D.groups),inG=new Set(gs.flatMap(g=>D.groups[g])),solo=[...new Set(D.items.flatMap(i=>i.w.concat(epW(i))))].filter(w=>!D.groups[w]&&!inG.has(w)).sort((a,b)=>cntW(b)-cntW(a));
  const sel=f.w.length?`<div class="ch" style="margin:0 0 8px">${f.w.map(w=>`<span data-t="w|${e(w)}">${e(w)} ✕</span>`).join('')}</div>`:'';
@@ -473,14 +464,14 @@ function filt(){const L=curL();if(!L)return;PQ='';
  <div class="fg fr"><label>文字（タイトル・出演者・メモ・収録内容）</label><input id="q" type="search" enterkeyhint="search" autocomplete="off" value="${e(f.q)}"></div>
  <div class="fr"><h4>ジャンル</h4><div>${L.g.map(x=>ch('g',x)).join('')}</div></div>
  <div class="fr"><h4>出演者</h4><input id="pq" type="search" placeholder="名前で探す" autocomplete="off" style="width:100%"><div id="pp" style="margin-top:8px">${ppHtml()}</div></div>
- ${L.l=='have'?`<div class="fr"><h4>配布</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div></div>`:`<div class="fr"><h4>求め度</h4><div>${WANT.map(o=>ch('o',o)).join('')}</div></div>`}
+ ${L.l=='have'?(VW?'':`<div class="fr"><h4>配布</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div></div>`):`<div class="fr"><h4>求め度</h4><div>${WANT.map(o=>ch('o',o)).join('')}</div></div>`}
  <div class="fbar"><button data-a="rs">リセット</button><button class="on" data-a="cl" id="fc" style="flex:1">${fcount()}件を見る</button></div>`);setTimeout(()=>{const q=$('#q');if(q&&!f.q)q.focus()},60)}
 function adminMenu(){
  sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
  <label>グループとメンバー（1行に1グループ　「グループ名：メンバー,メンバー」）</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div>
  <h4>共有リンク（所持リストの共有ページにだけ表示）</h4>
- ${D.links.map((l,n)=>`<div class="lkrow"><label>表示名</label><input data-lk="${n}|t" value="${e(l.t)}"><label>URL</label><input data-lk="${n}|u" value="${e(l.u)}" placeholder="https://"><label>ひとこと（任意）</label><input data-lk="${n}|d" value="${e(l.d||'')}"><div class="row"><button class="dng" data-a="lkdel" data-n="${n}">このリンクを削除</button></div></div>`).join('')}
+ ${D.links.map((l,n)=>`<div class="lkrow"><label>表示名</label><input data-lk="${n}|t" value="${e(l.t)}"><label>URL（https:// から貼り付け）</label><input data-lk="${n}|u" value="${e(l.u)}" placeholder="https://" inputmode="url" autocapitalize="off" autocorrect="off"><p class="hint" id="lh${n}" style="margin:2px 0 0">${linkU(l.u)?'共有ページに表示されます':'URLを入れると共有ページに表示されます'}</p><label>ひとこと（任意）</label><input data-lk="${n}|d" value="${e(l.d||'')}"><div class="row"><button class="dng" data-a="lkdel" data-n="${n}">このリンクを削除</button></div></div>`).join('')}
  <div class="row">${['Googleフォト','Googleドライブ','ギガファイル便'].map(p=>`<button data-a="lkadd" data-p="${p}">＋${p}</button>`).join('')}<button data-a="lkadd" data-p="">＋自由に追加</button></div>
  <div class="row"><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・共有リンク・免責事項・お知らせを直接編集できます。</p>'}`}`)}
 function login(){sheet(`${xbtn()}<h2>管理者ログイン</h2><div class="fg"><label>メールアドレス</label><input id="em" type="email" autocomplete="username" value="${e(em)}"><label>パスワード</label><input id="pw" type="password" autocomplete="current-password"><div class="row"><button class="on" data-a="pw">ログイン</button></div></div>`)}
@@ -520,8 +511,8 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='add'){const L=LISTS[route()];D.items.unshift({t:'新規',g:tab!='すべて'?tab:L.g[0],s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:L.l});touch();form(0);AN=null}
  else if(d.a=='del'){if(confirm('削除しますか？')){D.items.splice(+d.n,1);touch();AN=null;closeSheet()}}
  else if(d.a=='all'){x.parentNode.outerHTML=D.items[+d.n].k.slice(80).map(k=>kh(k)).join('')}
- else if(d.a=='lkadd'){D.links.push({t:d.p||'',u:'',d:''});touch();adminMenu()}
- else if(d.a=='lkdel'){D.links.splice(+d.n,1);touch();adminMenu()}
+ else if(d.a=='lkadd'){D.links.push({t:d.p||'',u:'',d:''});touch();adminMenu();const pn=$('#pn');pn.scrollTop=pn.scrollHeight;const us=pn.querySelectorAll('input[data-lk$="|u"]'),lu=us[us.length-1];if(lu)lu.focus()}
+ else if(d.a=='lkdel'){const st=$('#pn').scrollTop;D.links.splice(+d.n,1);touch();adminMenu();$('#pn').scrollTop=st}
  else{const r=t.target.closest('.r');if(r)detail(+r.dataset.i)}});
 document.addEventListener('submit',t=>{if(t.target.id=='tq'){t.preventDefault();goAll({q:$('#tqi').value.trim(),g:[],w:[],o:[]})}});
 document.addEventListener('input',t=>{const x=t.target,d=x.dataset;
@@ -533,7 +524,7 @@ document.addEventListener('input',t=>{const x=t.target,d=x.dataset;
  else if(d.pg){D.pages[d.pg]=x.value;mark()}
  else if(d.ti!==undefined){D.title=x.value;mark()}
  else if(d.gr!==undefined){const g={};x.value.split('\n').forEach(l=>{const m=l.split(/[:：]/);if(m.length>1&&m[0].trim())g[m[0].trim()]=m.slice(1).join(':').split(/[,、，]/).map(a=>a.trim()).filter(Boolean)});D.groups=g;mark()}
- else if(d.lk){const[n,k]=d.lk.split('|');D.links[+n][k]=x.value;mark()}
+ else if(d.lk){const[n,k]=d.lk.split('|');D.links[+n][k]=x.value;mark();if(k=='u'){const h=$('#lh'+n);if(h)h.textContent=linkU(x.value)?'共有ページに表示されます':'URLを入れると共有ページに表示されます'}}
  else if(d.e){const i=D.items[+$('#pn').dataset.n],k=d.e;
   i[k]=k=='w'?x.value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean):k=='k'?parseK(x.value):x.value;mark();const lp=$('#lp');if(lp)lp.innerHTML=lpH(i,+$('#pn').dataset.n)}});
 document.addEventListener('change',async t=>{if(t.target.id!='kf')return;const n=+$('#pn').dataset.n,i=D.items[n];let c=0;for(const fl of t.target.files){const a=parseK(await fl.text());mergeK(i,a);c+=a.length}mk();form(n);toast(c+'件追加しました')});
