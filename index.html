@@ -204,7 +204,7 @@ async function saveDB2(auto){const say=m=>auto?toast(m):alert(m);
 
 /* ================= データ ================= */
 function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};d.links=x.links||[];
- d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(!OWN.includes(i.o))i.o='';if(VW){i.r='';i.c=''}return i});if(SHK)d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));return d}
+ d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(!OWN.includes(i.o))i.o='';if(VW){i.r='';i.c=''}return i});if(SHK){d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));LISTS.have.g=GENRES.filter(g=>d.items.some(i=>i.g==g))}return d}
 async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
  let raw=null;
  if(C.url){try{const j=await(await sb('/rest/v1/archive?id=eq.1&select=data')).json();if(j&&j[0])raw=j[0].data}catch(x){}}
@@ -274,7 +274,7 @@ function pList(k){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&L.g.includes
  rows.slice(0,lim).forEach(([i,n])=>{if(tab=='すべて'&&L.g.length>1&&i.g!=last){last=i.g;h+=`<h3 class="gh">${e(i.g)}</h3>`}
   h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.l=='want'&&i.p?`<span class="b${i.p=='激求め'?' hot':''}">${e(i.p)}</span>`:''}</div>${tags(i)}${hitK(i)?`<div class="m">${hitK(i)}</div>`:''}</div>`});
  return head(L.n,L.sub+(L.d?'　'+L.d:''))+
- `<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?mm.length:mm.filter(i=>i.g==t).length}</i></button>`).join('')}</div>
+ `${L.g.length>1?`<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?mm.length:mm.filter(i=>i.g==t).length}</i></button>`).join('')}</div>`:''}
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
  <p class="hint">${rows.length?rows.length+'件　行をタップで詳細':''}${ed?'　編集モード：行をタップで編集':''}</p>
  
