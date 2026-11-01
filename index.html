@@ -264,7 +264,7 @@ function pList(k){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&L.g.includes
  const chips=[...(f.q?[['q',f.q]]:[]),...f.g.map(v=>['g',v]),...f.w.map(v=>['w',v]),...f.o.map(v=>['o',v])];
  let h='',last='';
  rows.slice(0,lim).forEach(([i,n])=>{if(tab=='すべて'&&L.g.length>1&&i.g!=last){last=i.g;h+=`<h3 class="gh">${e(i.g)}</h3>`}
-  h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button><div class="gl">${e(i.g)}</div><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.l=='want'&&i.p?`<span class="b${i.p=='激求め'?' hot':''}">${e(i.p)}</span>`:''}${i.o?`<span class="b">${e(i.o)}</span>`:''}${i.r&&!VW?`<span class="b">比 ${e(i.r)}</span>`:''}${i.c&&!VW?`<span class="b">有償 ${e(i.c)}</span>`:''}</div>${tags(i)}${i.k.length?`<div class="m">収録 ${i.k.length}件${hitK(i)} ›</div>`:''}</div>`});
+  h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.l=='want'&&i.p?`<span class="b${i.p=='激求め'?' hot':''}">${e(i.p)}</span>`:''}</div>${tags(i)}${hitK(i)?`<div class="m">${hitK(i)}</div>`:''}</div>`});
  return head(L.n,L.sub+(L.d?'　'+L.d:''))+
  `<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?mm.length:mm.filter(i=>i.g==t).length}</i></button>`).join('')}</div>
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
