@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>list.ola</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="theme-color" content="#000000"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="list.ola">
 <style>
 :root{--bg:#fff;--fg:#000;--mu:#6b6b6b;--ln:#d9d9d9;--soft:#f4f4f4}
 @media(prefers-color-scheme:dark){:root{--bg:#000;--fg:#fff;--mu:#a3a3a3;--ln:#2e2e2e;--soft:#121212}}
@@ -91,6 +92,8 @@ footer a{margin-right:14px}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.ld i{animation-duration:3s}}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;font-size:13px;z-index:20;display:none}
+.r{position:relative;padding-right:40px}.r .fv{position:absolute;right:0;top:8px}
+.fv{border:0;background:none;min-height:36px;min-width:36px;padding:0;font-size:20px;line-height:1;color:var(--fg)}h2 .fv{vertical-align:middle}
 </style>
 </head>
 <body>
@@ -105,10 +108,11 @@ footer a{margin-right:14px}
 /* ================= 設定・定数 ================= */
 const C=window.CFG||{},SK='ola.session';
 const GENRES=['ドラマ','映画','ドキュメンタリー','バラエティ','音楽番組','ラジオ','ライブ・配信','円盤・特典','音源'];
-const OWN=['所持','一部所持','未所持','確認中','対象外'];
+const OWN=['配布可','要相談','配布不可'];
 const LISTS={
  have:{n:'所持リスト',sub:'すべてのジャンル',d:'',g:GENRES,l:'have'},
- want:{n:'求めリスト',sub:'探しているもの',d:'探している作品・音源',g:GENRES,l:'want'}
+ want:{n:'求めリスト',sub:'探しているもの',d:'探している作品・音源',g:GENRES,l:'want'},
+ fav:{n:'お気に入り',sub:'この端末に保存（ログイン不要）',d:'',g:GENRES,l:'have',fav:1}
 };
 const DEF={title:'list.ola',notice:'',groups:{},pages:{must:'',terms:''},links:[],items:[]};
 
@@ -121,6 +125,27 @@ const route=()=>location.hash.replace(/^#\/?/,'').split('?')[0];
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2200)};
 const linkify=s=>e(s).replace(/https?:\/\/[^\s<>"']+/g,u=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
 
+/* ================= 追加機能 ================= */
+const FK='ola.fav';let FAV=new Set(),DP=null;try{FAV=new Set(JSON.parse(localStorage.getItem(FK))||[])}catch(x){}
+const fk=i=>i.t+'|'+i.g,isF=i=>FAV.has(fk(i)),inL=(i,L)=>L.fav?isF(i):i.l==L.l;
+const togF=i=>{const k=fk(i);FAV.has(k)?FAV.delete(k):FAV.add(k);try{localStorage.setItem(FK,JSON.stringify([...FAV]))}catch(x){}};
+const rt=()=>{const b=$('.tabs');if(b)b.scrollLeft=0};
+const copy=async s=>{try{await navigator.clipboard.writeText(s);toast('コピーしました')}catch(x){prompt('コピーしてください',s)}};
+const dinfo=i=>[['配布',i.o],['配布方法',i.m],['画質',i.q],['交換比率',i.r]].filter(a=>a[1]).map(a=>`<div class="ro"><b>${a[0]}</b>${e(a[1])}</div>`).join('');
+const DR=/(\d{4})[.\/\-年](\d{1,2})[.\/\-月](\d{1,2})日?/;
+function parseK(tx){const o=[];let c=null;
+ tx.split(/\r?\n/).forEach(l=>{l=l.trim();if(!l)return;
+  if(/[|\t]/.test(l)){const p=l.split(/[|\t]/).map(a=>a.trim());o.push([p[0]||'',p[1]||'',p[2]||'',p[3]||'']);c=null;return}
+  const h=l.replace(/^#+\s*/,''),m=h.match(DR);
+  if(m&&m.index==0){const d=m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');c=[d,d,'放送回',h.slice(m[0].length).replace(/^[\s　:：,，]+/,'')];o.push(c)}
+  else if(c)c[3]=(c[3]?c[3]+' / ':'')+h;
+  else o.push([h,'','',''])});return o}
+function mergeK(i,a){const m=new Map(i.k.map(k=>[k[1]||k[0],k]));a.forEach(k=>m.set(k[1]||k[0],k));i.k=[...m.values()].sort((x,y)=>(x[1]||'~').localeCompare(y[1]||'~'))}
+const mk=()=>{dirty=true;$('#sv').disabled=false;$('#ebt').textContent='編集モード　●未保存'};
+const LT=()=>{const L=LISTS[route()];return[L,D.items.filter(i=>match(i,L,true))]};
+function shareL(){const[L]=LT(),u=location.href.split('#')[0]+'#/'+route();navigator.share?navigator.share({title:(D.title||'list.ola')+' '+L.n,url:u}).catch(()=>{}):copy(u)}
+function copyL(){const[L,r]=LT();copy((D.title||'list.ola')+' '+L.n+'（'+r.length+'件）\n'+r.map(i=>{const x=[i.o,i.q,i.m,i.r&&'比'+i.r].filter(Boolean);return i.g+' / '+i.t+(x.length?'（'+x.join('・')+'）':'')}).join('\n'))}
+function inst(){if(DP){DP.prompt();DP=null}else if(matchMedia('(display-mode:standalone)').matches||navigator.standalone)toast('すでにホーム画面から開いています');else alert(/iPhone|iPad|iPod/.test(navigator.userAgent)?'Safariの共有ボタン（□↑）から「ホーム画面に追加」を選んでください':'ブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選んでください')}
 /* ================= Supabase（ログイン・保存） ================= */
 const sb=(p,o={})=>fetch(C.url+p,{method:o.method||'GET',body:o.body,headers:{apikey:C.key,'Content-Type':'application/json',...((o.tk||!/^sb_/.test(C.key))?{Authorization:'Bearer '+(o.tk||C.key)}:{}),...(o.h||{})}});
 const ses=j=>{S={a:j.access_token,r:j.refresh_token,exp:Date.now()/1000+j.expires_in};try{localStorage.setItem(SK,JSON.stringify(S))}catch(x){}};
@@ -134,7 +159,7 @@ async function saveDB2(){const t=await tok();if(!t){alert('ログインが切れ
 
 /* ================= データ ================= */
 function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};d.links=x.links||[];
- d.items=(x.items||[]).map(i=>({t:'',g:'ドラマ',s:'',w:[],n:'',o:'所持',y:'',k:[],l:'have',...i}));return d}
+ d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',y:'',k:[],l:'have',...i};if(!OWN.includes(i.o))i.o='';return i});return d}
 async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
  let raw=null;
  if(C.url){try{const j=await(await sb('/rest/v1/archive?id=eq.1&select=data')).json();if(j&&j[0])raw=j[0].data}catch(x){}}
@@ -145,15 +170,15 @@ async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
 const grpsOf=m=>Object.keys(D.groups).filter(g=>D.groups[g].includes(m));
 const hitW=(i,w)=>i.w.includes(w)||(D.groups[w]?D.groups[w].some(m=>i.w.includes(m)):grpsOf(w).some(g=>i.w.includes(g)));
 const cntW=w=>D.items.filter(i=>i.l=='have'&&hitW(i,w)).length;
-const hay=i=>(i.t+' '+i.w.join(' ')+' '+i.w.filter(w=>D.groups[w]).map(g=>D.groups[g].join(' ')).join(' ')+' '+i.n+' '+i.s+' '+i.k.map(k=>k[0]).join(' ')).toLowerCase();
+const hay=i=>(i.t+' '+i.w.join(' ')+' '+i.w.filter(w=>D.groups[w]).map(g=>D.groups[g].join(' ')).join(' ')+' '+i.n+' '+i.m+' '+i.q+' '+i.k.map(k=>k.join(' ')).join(' ')).toLowerCase();
 const tags=i=>i.w.map(w=>`<span class="p${D.groups[w]?' g':''}" data-w="${e(w)}">${e(w)}</span>`).join('');
-function match(i,L,useTab){return i.l==L.l&&L.g.includes(i.g)&&(!useTab||tab=='すべて'||i.g==tab)
+function match(i,L,useTab){return inL(i,L)&&L.g.includes(i.g)&&(!useTab||tab=='すべて'||i.g==tab)
  &&f.q.toLowerCase().split(/\s+/).filter(Boolean).every(w=>hay(i).includes(w))
  &&(!f.g.length||f.g.includes(i.g))&&(!f.w.length||f.w.some(w=>hitW(i,w)))&&(!f.o.length||f.o.includes(i.o))}
 
 /* ================= ページ ================= */
 const head=(h,sub,back)=>`<a class="back" href="${back||'#/'}">← ${back?'戻る':'トップ'}</a><h1>${e(h)}</h1>${sub?`<p class="sub">${e(sub)}</p>`:''}`;
-const cnt=k=>{const L=LISTS[k];return D.items.filter(i=>i.l==L.l&&L.g.includes(i.g)).length};
+const cnt=k=>{const L=LISTS[k];return D.items.filter(i=>inL(i,L)&&L.g.includes(i.g)).length};
 
 function pTop(){
  const n=D.items.filter(i=>i.n.startsWith('【NEW】')).length;
@@ -161,6 +186,7 @@ function pTop(){
   ['must','必読','ご利用の前にお読みください',''],
   ['have',LISTS.have.n,'ドラマ・映画・バラエティ・ライブ・円盤・音源など　ジャンル別',cnt('have')+'件'],
   ['want',LISTS.want.n,LISTS.want.d,cnt('want')+'件'],
+  ['fav','お気に入り','ログイン不要・この端末に保存',cnt('fav')+'件'],
   ['people','出演者から探す',Object.keys(D.groups).join('・')+' ほか　メンバー名で絞り込み',''],
   ['guide','見かた','このサイトの使い方',''],
   ['link','LINK','リンク集',''],
@@ -183,7 +209,10 @@ function pGuide(){return head('見かた','')+`<ol class="guide">
 <li><b>タイトルをタップ</b>備考や収録内容、出演者のメンバー名が開きます。</li>
 <li><b>出演者のタグをタップ</b>ジャンルをまたいで、その人・グループの一覧が出ます。</li>
 <li><b>メンバー名で探す</b>「出演者から探す」から、なにわ男子・SixTONES の各メンバーを選べます。グループ名義の項目は、メンバー全員分として含まれます。</li>
-<li><b>検索で絞り込み</b>文字・ジャンル・出演者・所持状況を組み合わせられます。同じ項目の中は「どれか」、別の項目どうしは「すべて」に当てはまるものが出ます。選んだ条件は一覧の上に出て、タップで外せます。</li></ol>`}
+<li><b>検索で絞り込み</b>文字・ジャンル・出演者・配布を組み合わせられます。同じ項目の中は「どれか」、別の項目どうしは「すべて」に当てはまるものが出ます。選んだ条件は一覧の上に出て、タップで外せます。</li>
+<li><b>お気に入り</b>各行の ☆ をタップ。ログイン不要で、この端末のブラウザに保存されます（端末やブラウザを変えると引き継がれません）。</li>
+<li><b>共有</b>所持リストの「共有」でリンク、「一覧をコピー」で絞り込み中の一覧をテキストで送れます。</li>
+<li><b>ホーム画面に追加</b>ページ下の「ホーム画面に追加」から、アプリのように起動できます。</li></ol>`}
 
 function pPeople(){
  const rest={};D.items.forEach(i=>i.w.forEach(w=>{if(!D.groups[w]&&!grpsOf(w).length)rest[w]=1}));
@@ -193,18 +222,19 @@ function pPeople(){
  `<section class="ppl"><h3><span>その他</span></h3><p class="cl">${Object.keys(rest).sort((a,b)=>cntW(b)-cntW(a)).map(chip).join('')||'<span class="hint">なし</span>'}</p></section>
  <p class="hint">グループ名義で登録した項目（ライブ・音源など）は、そのグループの全メンバー分として数えます。</p>`}
 
-function pList(k){const L=LISTS[k],base=D.items.filter(i=>i.l==L.l&&L.g.includes(i.g));
+function pList(k){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&L.g.includes(i.g));
  const tabs=['すべて',...L.g];if(!tabs.includes(tab))tab='すべて';
  let rows=D.items.map((x,n)=>[x,n]).filter(([i])=>match(i,L,true));
  if(tab=='すべて'&&L.g.length>1)rows.sort((a,b)=>L.g.indexOf(a[0].g)-L.g.indexOf(b[0].g));
  const chips=[...(f.q?[['q',f.q]]:[]),...f.g.map(v=>['g',v]),...f.w.map(v=>['w',v]),...f.o.map(v=>['o',v])];
  let h='',last='';
  rows.slice(0,lim).forEach(([i,n])=>{if(tab=='すべて'&&L.g.length>1&&i.g!=last){last=i.g;h+=`<h3 class="gh">${e(i.g)}</h3>`}
-  h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><div class="gl">${e(i.g)}${i.s?' ・ '+e(i.s):''}</div><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.l=='have'&&i.o&&i.o!='所持'?`<span class="b">${e(i.o)}</span>`:''}</div>${tags(i)}${i.k.length?`<div class="m">収録 ${i.k.length}件 ›</div>`:''}</div>`});
+  h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button><div class="gl">${e(i.g)}</div><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.o?`<span class="b">${e(i.o)}</span>`:''}${i.r?`<span class="b">比 ${e(i.r)}</span>`:''}</div>${tags(i)}${i.k.length?`<div class="m">収録 ${i.k.length}件 ›</div>`:''}</div>`});
  return head(L.n,L.sub+(L.d?'　'+L.d:''))+
  `<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?base.length:base.filter(i=>i.g==t).length}</i></button>`).join('')}</div>
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
  <p class="hint">${rows.length?rows.length+'件　行をタップで詳細':''}${ed?'　編集モード：行をタップで編集':''}</p>
+ ${L.fav?'':`<p class="row" style="margin:0 0 6px"><button data-a="sh">共有</button><button data-a="cp">一覧をコピー</button></p>`}
  ${ed?`<p><button data-a="add">＋この一覧に追加</button></p>`:''}${h||'<p class="empty">該当するものがありません</p>'}${rows.length>lim?'<p><button id="mo">もっと見る</button></p>':''}`}
 
 /* ================= 描画 ================= */
@@ -217,9 +247,9 @@ function render(){if(!D)return;const r=route();
  if(r=='')h=pTop();else if(r=='must')h=pText('must','必読','');else if(r=='terms')h=pText('terms','免責事項','');
  else if(r=='link')h=pLink();else if(r=='guide')h=pGuide();else if(r=='people')h=pPeople();else if(isList)h=pList(r);
  else h=head('ページが見つかりません','');
- $('#app').innerHTML=h;
- $('#ft').innerHTML=`<a href="#/must">必読</a><a href="#/link">LINK</a><a href="#/terms">免責事項</a>`}
-function onRoute(){$('#sh').className='';if(keepF)keepF=false;else{f={q:'',g:[],w:[],o:[]};tab='すべて'}lim=60;render();scrollTo(0,0)}
+ const sl=($('.tabs')||0).scrollLeft||0;$('#app').innerHTML=h;const t2=$('.tabs');if(t2)t2.scrollLeft=sl;
+ $('#ft').innerHTML=`<a href="#/must">必読</a><a href="#/link">LINK</a><a href="#/terms">免責事項</a><button class="ghost" data-a="ins" style="padding:0;min-height:0;font:inherit;color:inherit;text-decoration:underline">ホーム画面に追加</button>`}
+function onRoute(){rt();$('#sh').className='';if(keepF)keepF=false;else{f={q:'',g:[],w:[],o:[]};tab='すべて'}lim=60;render();scrollTo(0,0)}
 addEventListener('hashchange',onRoute);
 addEventListener('beforeunload',t=>{if(dirty){t.preventDefault();t.returnValue=''}});
 addEventListener('keydown',t=>{if(t.key=='Escape')closeSheet();if(t.key=='Enter'&&t.target.classList&&t.target.classList.contains('r'))t.target.click()});
@@ -231,20 +261,23 @@ const xbtn=t=>`<p style="text-align:right;margin:0"><button data-a="cl">${t||'�
 const kh=k=>`<div class="k">${e(k[0])}<small>${[k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`;
 function detail(n){if(ed)return form(n);const i=D.items[n];
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
- sheet(`${xbtn()}<div class="gl">${e(i.g)}${i.s?' ・ '+e(i.s):''}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${i.o&&i.l=='have'?`<p class="hint">所持状況：${e(i.o)}</p>`:''}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?`<h4>収録内容 ${i.k.length}件</h4>`+i.k.slice(0,80).map(kh).join('')+(i.k.length>80?`<p><button data-a="all" data-n="${n}">残りも表示</button></p>`:''):''}`)}
+ sheet(`${xbtn()}<div class="gl">${e(i.g)}</div><h2><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button> ${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?`<h4>収録内容 ${i.k.length}件</h4>`+i.k.slice(0,80).map(kh).join('')+(i.k.length>80?`<p><button data-a="all" data-n="${n}">残りも表示</button></p>`:''):''}`)}
 function form(n){const i=D.items[n];
  const pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:8px 0 2px">${e(g)}（グループ名義）</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}全員</button>${ms.map(m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`).join('')}`).join('');
  sheet(`<div class="fg">${xbtn('完了')}
  <label>リスト</label><select data-e="l"><option value="have" ${i.l=='have'?'selected':''}>所持リスト</option><option value="want" ${i.l=='want'?'selected':''}>求めリスト</option></select>
  <label>タイトル</label><input data-e="t" value="${e(i.t)}">
  <label>ジャンル</label><select data-e="g">${GENRES.map(x=>`<option ${x==i.g?'selected':''}>${x}</option>`).join('')}</select>
- <label>種別（任意：ライブ／配信／シングル など）</label><input data-e="s" value="${e(i.s)}">
+ 
  <label>出演者・グループ（タップで追加／外す）</label><div>${pal}</div>
  <label>すべてのタグ（直接入力もできます・カンマ区切り）</label><input data-e="w" id="wi" value="${e(i.w.join(','))}">
  <label>メモ（先頭に【NEW】でNEW表示）</label><input data-e="n" value="${e(i.n)}">
- <label>所持状況</label><select data-e="o">${OWN.map(x=>`<option ${x==i.o?'selected':''}>${x}</option>`).join('')}</select>
- <label>収録内容（1行に1件：タイトル|日付|種別|メモ）</label><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea>
- <div class="row"><button data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
+ <label>配布</label><select data-e="o"><option value="">未設定</option>${OWN.map(x=>`<option ${x==i.o?'selected':''}>${x}</option>`).join('')}</select>
+ <label>配布方法（例：Googleドライブ／DM／郵送）</label><input data-e="m" value="${e(i.m)}">
+ <label>画質（例：1080p／720p／DVD画質／音声のみ）</label><input data-e="q" value="${e(i.q)}">
+ <label>交換比率（例：1:1／2:1）</label><input data-e="r" value="${e(i.r)}">
+ <label>収録内容（1行1件。「2016-04-03 メモ」や、見出し行＋出演者行のメモ書きもそのまま貼れます。従来の タイトル|日付|種別|メモ も可）</label><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea>
+ <div class="row" style="margin-top:8px"><input type="file" id="kf" accept=".md,.txt,.csv" multiple hidden><button data-a="kf">ファイルから収録内容を追加（.md/.txt）</button></div><div class="row"><button data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
 function filt(){const L=LISTS[route()];if(!L)return;
  const ws=Object.keys(D.groups),inG=new Set(ws.flatMap(g=>D.groups[g])),rest={};
  D.items.forEach(i=>i.w.forEach(w=>{if(!D.groups[w]&&!inG.has(w))rest[w]=1}));
@@ -254,7 +287,7 @@ function filt(){const L=LISTS[route()];if(!L)return;
  <h4>ジャンル</h4><div>${L.g.map(x=>ch('g',x)).join('')}</div>
  <h4>出演者</h4>${ws.map(g=>`<div class="hint" style="margin:8px 0 2px">${e(g)}</div>${ch('w',g,g+'（全員）'+' '+cntW(g))}${D.groups[g].map(m=>ch('w',m,m+' '+cntW(m))).join('')}`).join('')}
  <div class="hint" style="margin:8px 0 2px">その他</div>${Object.keys(rest).sort((a,b)=>cntW(b)-cntW(a)).map(w=>ch('w',w,w+' '+cntW(w))).join('')}
- ${L.l=='have'?`<h4>所持状況</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div>`:''}
+ ${L.l=='have'?`<h4>配布</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div>`:''}
  <div class="row"><button data-a="rs">リセット</button><button class="on" data-a="cl">結果を見る</button></div>`)}
 function adminMenu(){
  sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="lo">ログアウト</button></div>
@@ -264,11 +297,12 @@ function adminMenu(){
 function login(){sheet(`${xbtn()}<h2>管理者ログイン</h2><div class="fg"><label>メールアドレス</label><input id="em" type="email" autocomplete="username" value="${e(em)}"><label>パスワード</label><input id="pw" type="password" autocomplete="current-password"><div class="row"><button class="on" data-a="pw">ログイン</button></div></div>`)}
 
 /* ================= 操作 ================= */
-const goAll=nf=>{f=nf;tab='すべて';lim=60;$('#sh').className='';if(route()=='have'){render();scrollTo(0,0)}else{keepF=true;location.hash='#/have'}};
+const goAll=nf=>{rt();f=nf;tab='すべて';lim=60;$('#sh').className='';if(route()=='have'){render();scrollTo(0,0)}else{keepF=true;location.hash='#/have'}};
 const setF=w=>goAll({q:'',g:[],w:[w],o:[]});
 document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();return}
  const x=t.target.closest('button,span,a,.r')||t.target,d=x.dataset||{};
- if(d.pw!==undefined)setF(d.pw);
+ if(d.fv!==undefined){const i=D.items[+d.fv];togF(i);x.textContent=isF(i)?'★':'☆';render()}
+ else if(d.pw!==undefined)setF(d.pw);
  else if(d.w!==undefined)setF(d.w);
  else if(d.tab!==undefined){tab=d.tab;lim=60;render()}
  else if(d.x){const[k,v]=d.x.split('|');if(k=='q')f.q='';else f[k]=f[k].filter(a=>a!=v);render()}
@@ -277,13 +311,14 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.t){const[k,v]=d.t.split('|'),a=f[k],j=a.indexOf(v);j<0?a.push(v):a.splice(j,1);x.classList.toggle('on')}
  else if(d.pick!==undefined){const i=D.items[+$('#pn').dataset.n],j=i.w.indexOf(d.pick);j<0?i.w.push(d.pick):i.w.splice(j,1);x.classList.toggle('on');$('#wi').value=i.w.join(',');dirty=true}
  else if(d.a=='cl')closeSheet();
+ else if(d.a=='kf')$('#kf').click();else if(d.a=='sh')shareL();else if(d.a=='cp')copyL();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
  else if(d.a=='pw'){em=$('#em').value.trim();x.disabled=true;x.textContent='確認中…';try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else alert('メールアドレスかパスワードが違います')}catch(z){alert('通信に失敗しました')}if(x.isConnected){x.disabled=false;x.textContent='ログイン'}}
  else if(d.a=='lo'){out();closeSheet();render()}
  else if(d.a=='bk'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='data-'+new Date().toISOString().slice(0,10)+'.json';a.click()}
- else if(d.a=='add'){const L=LISTS[route()];D.items.unshift({t:'新規',g:tab!='すべて'?tab:L.g[0],s:'',w:[],n:'',o:'所持',y:'',k:[],l:L.l});dirty=true;form(0)}
+ else if(d.a=='add'){const L=LISTS[route()];D.items.unshift({t:'新規',g:tab!='すべて'?tab:L.g[0],s:'',w:[],n:'',o:'',m:'',q:'',r:'',y:'',k:[],l:L.l});dirty=true;form(0)}
  else if(d.a=='del'){if(confirm('削除しますか？')){D.items.splice(+d.n,1);dirty=true;closeSheet()}}
  else if(d.a=='all'){x.parentNode.outerHTML=D.items[+d.n].k.slice(80).map(kh).join('')}
  else if(d.a=='lkadd'){D.links.push({t:'',u:'',d:''});dirty=true;render()}
@@ -299,7 +334,10 @@ document.addEventListener('input',t=>{const x=t.target,d=x.dataset;
  else if(d.gr!==undefined){const g={};x.value.split('\n').forEach(l=>{const m=l.split(/[:：]/);if(m.length>1&&m[0].trim())g[m[0].trim()]=m.slice(1).join(':').split(/[,、，]/).map(a=>a.trim()).filter(Boolean)});D.groups=g;mark()}
  else if(d.lk){const[n,k]=d.lk.split('|');D.links[+n][k]=x.value;mark()}
  else if(d.e){const i=D.items[+$('#pn').dataset.n],k=d.e;
-  i[k]=k=='w'?x.value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean):k=='k'?x.value.split('\n').filter(a=>a.trim()).map(s=>{const p=s.split('|');return[p[0]||'',p[1]||'',p[2]||'',p[3]||'']}):x.value;mark()}});
+  i[k]=k=='w'?x.value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean):k=='k'?parseK(x.value):x.value;mark()}});
+document.addEventListener('change',async t=>{if(t.target.id!='kf')return;const n=+$('#pn').dataset.n,i=D.items[n];let c=0;for(const fl of t.target.files){const a=parseK(await fl.text());mergeK(i,a);c+=a.length}mk();form(n);toast(c+'件追加しました')});
+addEventListener('beforeinstallprompt',t=>{t.preventDefault();DP=t});
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 init();
 </script>
 </body>
