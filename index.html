@@ -1,75 +1,77 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MEDIA ARCHIVE</title>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MEDIA ARCHIVE</title>
 <style>
-:root{--bg:#fff;--fg:#111;--mu:#888;--ln:#e6e6e6;--ac:#111;--ac2:#fff}
-@media(prefers-color-scheme:dark){:root{--bg:#111;--fg:#f2f2f2;--mu:#999;--ln:#2e2e2e;--ac:#f2f2f2;--ac2:#111}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.6 -apple-system,"Hiragino Sans",sans-serif}
-header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--ln);padding:12px 16px;z-index:5}
-.top{display:flex;justify-content:space-between;align-items:center}h1{font-size:15px;letter-spacing:.2em;margin:0}
-button,select,input{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:6px 10px}
-button{cursor:pointer}button.on{background:var(--ac);color:var(--ac2);border-color:var(--ac)}
-.tabs{display:flex;gap:6px;overflow-x:auto;margin:10px 0 0;padding-bottom:2px}.tabs button{white-space:nowrap}
-.bar{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px}.bar input{flex:1;min-width:140px}
-main{padding:0 16px 60px;overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}
-th{text-align:left;color:var(--mu);font-weight:400;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--ln)}
-td{padding:9px 8px;border-bottom:1px solid var(--ln);vertical-align:top}tr.r{cursor:pointer}tr.r:hover{background:var(--ln)}
-.t{font-weight:600}.tag{font-size:11px;border:1px solid var(--ln);border-radius:10px;padding:1px 8px;white-space:nowrap}
-.msg{color:var(--mu);padding:8px 16px;font-size:12px}.warn{background:var(--ln)}
-#sh{position:fixed;inset:0;background:#0006;display:none;z-index:9}#sh.on{display:block}
-#pn{position:absolute;right:0;top:0;bottom:0;width:min(520px,100%);background:var(--bg);overflow:auto;padding:18px}
-.f{margin:0 0 12px}.f label{display:block;font-size:12px;color:var(--mu)}.f input,.f select{width:100%}
-a{color:inherit;text-decoration:underline;cursor:pointer}ul{padding-left:18px;margin:4px 0}
+:root{--bg:#fafaf8;--cd:#fff;--fg:#1a1a1a;--mu:#8a8a85;--ln:#e8e8e3;--ac:#1a1a1a;--ax:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#121212;--cd:#1b1b1b;--fg:#eee;--mu:#9a9a95;--ln:#2c2c2c;--ac:#eee;--ax:#121212}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"Hiragino Sans",sans-serif;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--ln)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 6px;max-width:1100px;margin:auto}h1{font-size:15px;letter-spacing:.22em;margin:0}
+button,input,select,textarea{font:inherit;color:inherit;background:var(--cd);border:1px solid var(--ln);border-radius:8px;padding:7px 12px}button{cursor:pointer}button.on{background:var(--ac);color:var(--ax);border-color:var(--ac)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 16px 10px;max-width:1100px;margin:auto;scrollbar-width:none}.tabs button{white-space:nowrap;border-radius:20px}
+main{max-width:1100px;margin:auto;padding:12px 16px 80px}.hint{color:var(--mu);font-size:12px;margin:0 0 10px}
+.ch{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.ch span{background:var(--ac);color:var(--ax);border-radius:14px;padding:2px 10px;font-size:13px;cursor:pointer}
+.gr{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.c{background:var(--cd);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;cursor:pointer}.c:active{opacity:.7}
+.gl{font-size:11px;color:var(--mu)}.tt{font-weight:600;margin:2px 0 6px;word-break:break-word}.m{font-size:12px;color:var(--mu);margin-top:6px}
+.p{display:inline-block;border:1px solid var(--ln);border-radius:14px;padding:0 9px;font-size:12px;margin:0 4px 4px 0;cursor:pointer}.nw{background:var(--ac);color:var(--ax);border-radius:4px;padding:0 6px;font-size:10px;margin-left:6px}
+.o{border:1px solid var(--mu);color:var(--mu);border-radius:4px;padding:0 6px;font-size:11px;margin-left:6px}
+#sh{position:fixed;inset:0;background:#0007;display:none;z-index:9;align-items:flex-end;justify-content:center}#sh.on{display:flex}
+#pn{background:var(--bg);width:min(640px,100%);max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom))}
+@media(min-width:700px){#sh{align-items:center}#pn{border-radius:16px}}
+h2{font-size:17px;margin:0 0 6px}h3{font-size:13px;color:var(--mu);margin:16px 0 6px;font-weight:600}
+.k{padding:7px 0;border-bottom:1px solid var(--ln);font-size:14px}.k small{color:var(--mu);display:block}
+.fg label{display:block;font-size:12px;color:var(--mu);margin-top:10px}.fg input,.fg select,.fg textarea{width:100%}.fg textarea{min-height:140px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.opt button{margin:0 6px 6px 0;border-radius:16px;padding:3px 12px}
 </style></head><body>
-<header><div class="top"><h1>MEDIA ARCHIVE</h1><div><button id="md"></button></div></div><div class="tabs" id="tb"></div></header>
-<div id="ed" class="msg warn" hidden>編集モード：変更はこの端末のブラウザにだけ保存されます。みんなに反映するには「書き出し」→ GitHubの data.json を差し替えてください。</div>
-<div class="bar" id="br"></div><div class="msg" id="ct"></div><main id="ls"></main>
+<header><div class="top"><h1>MEDIA ARCHIVE</h1><div><button id="bs">🔍 検索</button> <button id="bm">☰</button></div></div><div class="tabs" id="tb"></div></header>
+<main><div class="ch" id="ch"></div><p class="hint" id="ct"></p><div class="gr" id="gr"></div></main>
 <div id="sh"><div id="pn"></div></div>
 <script>
-const KEY='media-archive-v1',LB={people:'出演者',works:'作品・番組',products:'商品',contents:'コンテンツ',sounds:'音源',lives:'公演'};
-const REL={people:{'所属グループ':'people'},works:{'出演者':'people'},sounds:{'収録商品':'products'},contents:{'作品・番組':'works','商品':'products','公演':'lives'}};
-const FIL=['区分','種別','商品種別','音源種別','公演形態','所持状況','確認状況'];
-const FIX={'所持状況':['所持','一部所持','未所持','確認中','対象外'],'確認状況':['公式確認済み','複数情報で確認','未確認','情報不足']};
-let DB,tab='works',q='',fl={},edit=false,lim=150,cur=null;
-const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const sp=v=>String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){alert('保存できませんでした')}};
-async function init(){try{const b=await(await fetch('data.json')).json();let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}DB=s&&s.v===b.v?s:b}catch(e){$('#ls').textContent='data.json を読み込めません。GitHub Pages上で開いてください。';return}
-draw()}
-function opts(k,c){return FIX[c]||[...new Set(DB.rows[k].map(r=>r[c]).filter(Boolean))].sort()}
-function draw(){const k=tab,C=DB.cols[k];
-$('#md').textContent=edit?'編集中':'閲覧中';$('#md').className=edit?'on':'';$('#ed').hidden=!edit;
-$('#tb').innerHTML=Object.keys(LB).map(x=>`<button class="${x==k?'on':''}" data-t="${x}">${LB[x]} ${DB.rows[x].length}</button>`).join('');
-let h=`<input id="q" placeholder="検索" value="${esc(q)}">`;
-FIL.filter(c=>C.includes(c)).forEach(c=>h+=`<select data-f="${c}"><option value="">${c}：すべて</option>${opts(k,c).map(o=>`<option ${fl[c]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`);
-if(edit)h+=`<button id="ad">＋追加</button><button id="ex">書き出し</button><button id="im">読み込み</button><button id="rs">リセット</button>`;
-$('#br').innerHTML=h;
-const rows=DB.rows[k].map((r,i)=>[r,i]).filter(([r])=>(!q||Object.values(r).join(' ').toLowerCase().includes(q.toLowerCase()))&&Object.entries(fl).every(([c,v])=>!v||r[c]===v));
-const show=C.filter(c=>c!='情報源URL').slice(0,5);
-$('#ct').textContent=rows.length+'件';
-$('#ls').innerHTML=`<table><tr>${show.map(c=>`<th>${c}</th>`).join('')}</tr>`+rows.slice(0,lim).map(([r,i])=>`<tr class="r" data-i="${i}">${show.map((c,j)=>`<td class="${j?'':'t'}">${j&&(c=='所持状況'||c=='確認状況'||c=='区分'||c=='種別')&&r[c]?`<span class="tag">${esc(r[c])}</span>`:esc(r[c])}</td>`).join('')}</tr>`).join('')+'</table>'+(rows.length>lim?`<p><button id="mo">もっと見る</button></p>`:'');}
-function panel(i){cur=i;const k=tab,r=DB.rows[k][i],C=DB.cols[k];let h=`<p><button id="cl">閉じる</button>${edit?' <button id="dl">削除</button>':''}</p>`;
-C.forEach(c=>{const rl=REL[k]&&REL[k][c];let v=r[c]||'';h+=`<div class="f"><label>${c}</label>`;
-if(edit){const o=FIX[c]||(FIL.includes(c)?opts(k,c):null);h+=o?`<select data-e="${c}"><option></option>${o.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('')}</select>`:`<input data-e="${c}" value="${esc(v)}">`}
-else if(rl&&v){h+=sp(v).map(x=>DB.rows[rl].some(y=>y[DB.cols[rl][0]]===x)?`<a data-g="${rl}|${esc(x)}">${esc(x)}</a>`:esc(x)).join(' / ')}
-else if(c=='情報源URL'&&v)h+=`<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>`;else h+=esc(v)||'<span style="color:var(--mu)">—</span>';h+='</div>'});
-const t=r[C[0]];Object.entries(REL).forEach(([k2,m])=>Object.entries(m).forEach(([c,tg])=>{if(tg!=k)return;const xs=DB.rows[k2].filter(y=>sp(y[c]).includes(t));
-if(xs.length)h+=`<div class="f"><label>${LB[k2]}（${c}で紐づく ${xs.length}件）</label><ul>${xs.slice(0,60).map(y=>`<li><a data-g="${k2}|${esc(y[DB.cols[k2][0]])}">${esc(y[DB.cols[k2][0]])}</a></li>`).join('')}</ul>${xs.length>60?'…他':''}</div>`}));
-$('#pn').innerHTML=h;$('#sh').className='on'}
-function go(k,t){tab=k;q='';fl={};const i=DB.rows[k].findIndex(r=>r[DB.cols[k][0]]===t);draw();if(i>=0)panel(i)}
-document.addEventListener('click',e=>{const t=e.target;
-if(t.id=='md'){edit=!edit;$('#sh').className='';draw()}
-else if(t.dataset.t){tab=t.dataset.t;q='';fl={};lim=150;draw()}
-else if(t.id=='mo'){lim+=300;draw()}
-else if(t.id=='cl'||t.id=='sh'){$('#sh').className=''}
-else if(t.dataset.g){const[a,b]=t.dataset.g.split('|');go(a,b)}
-else if(t.id=='ad'){const o={};DB.cols[tab].forEach(c=>o[c]='');o[DB.cols[tab][0]]='新規';if(o['所持状況']==='')o['所持状況']='所持';if(o['確認状況']==='')o['確認状況']='未確認';DB.rows[tab].unshift(o);save();draw();panel(0)}
-else if(t.id=='dl'){if(confirm('削除しますか？')){DB.rows[tab].splice(cur,1);save();$('#sh').className='';draw()}}
-else if(t.id=='ex'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:'application/json'}));a.download='data.json';a.click()}
-else if(t.id=='im'){const f=document.createElement('input');f.type='file';f.accept='.json';f.onchange=()=>f.files[0].text().then(s=>{DB=JSON.parse(s);save();draw()});f.click()}
-else if(t.id=='rs'){if(confirm('この端末での編集をすべて破棄して元のデータに戻します。')){localStorage.removeItem(KEY);location.reload()}}
-else{const tr=t.closest('tr.r');if(tr)panel(+tr.dataset.i)}});
-document.addEventListener('input',e=>{const t=e.target;if(t.id=='q'){q=t.value;lim=150;const p=t.selectionStart;draw();const n=$('#q');n.focus();n.setSelectionRange(p,p)}
-else if(t.dataset.e){DB.rows[tab][cur][t.dataset.e]=t.value;save();draw()}});
-document.addEventListener('change',e=>{const t=e.target;if(t.dataset.f){fl[t.dataset.f]=t.value;lim=150;draw()}
-else if(t.dataset.e&&t.tagName=='SELECT'){DB.rows[tab][cur][t.dataset.e]=t.value;save();draw()}});
+const KEY='ma2',GS=['すべて','ドラマ','映画','ドキュメンタリー','バラエティ','音楽番組','ラジオ','ライブ・配信','円盤・特典','音源'],OWN=['所持','一部所持','未所持','確認中','対象外'];
+let D,g='すべて',f={q:'',w:[],y:[],o:[]},ed=false,lim=60;
+const $=s=>document.querySelector(s),e=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(x){alert('保存できませんでした')}};
+async function init(){try{const b=await(await fetch('data.json')).json();let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(x){}D=s&&s.v===b.v?s:b}catch(x){$('#gr').textContent='data.json を読み込めません。公開されたURLで開いてください。';return}draw()}
+const hay=i=>(i.t+' '+i.w.join(' ')+' '+i.n+' '+i.s+' '+i.k.map(k=>k[0]).join(' ')).toLowerCase();
+function list(){return D.items.map((x,n)=>[x,n]).filter(([i])=>(g=='すべて'||i.g==g)&&f.q.toLowerCase().split(/\s+/).filter(Boolean).every(w=>hay(i).includes(w))&&(!f.w.length||f.w.some(w=>i.w.includes(w)))&&(!f.y.length||f.y.includes(i.y||'不明'))&&(!f.o.length||f.o.includes(i.o)))}
+function draw(){$('#tb').innerHTML=GS.map(x=>`<button class="${x==g?'on':''}" data-g="${x}">${x}</button>`).join('');
+$('#ch').innerHTML=[...(f.q?[['q',f.q]]:[]),...f.w.map(v=>['w',v]),...f.y.map(v=>['y',v]),...f.o.map(v=>['o',v])].map(([k,v])=>`<span data-x="${k}|${e(v)}">${e(v)} ✕</span>`).join('');
+const L=list();$('#ct').textContent=L.length+'件（カードをタップで詳細・名前のタグをタップでその人の一覧）';
+$('#gr').innerHTML=L.slice(0,lim).map(([i,n])=>`<div class="c" data-i="${n}"><div class="gl">${i.g}${i.s?' / '+e(i.s):''}${i.y?' / '+i.y:''}</div><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="nw">NEW</span>':''}${i.o&&i.o!='所持'?`<span class="o">${i.o}</span>`:''}</div>${i.w.map(w=>`<span class="p" data-w="${e(w)}">${e(w)}</span>`).join('')}${i.k.length?`<div class="m">収録内容 ${i.k.length}件 ›</div>`:''}</div>`).join('')+(L.length>lim?'<button id="mo">もっと見る</button>':'')}
+function sheet(h){$('#pn').innerHTML=h;$('#sh').className='on'}
+function close(){$('#sh').className='';draw()}
+function detail(n){const i=D.items[n];if(ed)return form(n);const ks=i.k;
+sheet(`<p style="text-align:right;margin:0"><button data-a="cl">閉じる</button></p><div class="gl">${i.g}${i.s?' / '+e(i.s):''}${i.y?' / '+i.y:''}</div><h2>${e(i.t)}</h2>${i.w.map(w=>`<span class="p" data-w="${e(w)}">${e(w)}</span>`).join('')}${i.o&&i.o!='所持'?`<span class="o">${i.o}</span>`:''}${i.n?`<p class="hint">${e(i.n)}</p>`:''}${ks.length?`<h3>収録内容（${ks.length}件）</h3>`+ks.slice(0,80).map(k=>`<div class="k">${e(k[0])}<small>${[k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`).join('')+(ks.length>80?`<p><button data-a="all" data-n="${n}">残り${ks.length-80}件も表示</button></p>`:''):''}`)}
+function form(n){const i=D.items[n];sheet(`<div class="fg"><p style="text-align:right;margin:0"><button data-a="cl">完了</button></p>
+<label>名前</label><input data-e="t" value="${e(i.t)}"><label>ジャンル</label><select data-e="g">${GS.slice(1).map(x=>`<option ${x==i.g?'selected':''}>${x}</option>`).join('')}</select>
+<label>種別（任意）</label><input data-e="s" value="${e(i.s)}"><label>出演者・アーティスト（カンマ区切り）</label><input data-e="w" value="${e(i.w.join(','))}">
+<label>メモ</label><input data-e="n" value="${e(i.n)}"><label>所持状況</label><select data-e="o">${OWN.map(x=>`<option ${x==i.o?'selected':''}>${x}</option>`).join('')}</select>
+<label>収録内容（1行に1件：タイトル|日付|種別|メモ）</label><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea>
+<div class="row"><button data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
+function filt(){const ws={},ys=new Set();D.items.forEach(i=>{i.w.forEach(w=>ws[w]=(ws[w]||0)+1);ys.add(i.y||'不明')});
+const ch=(k,v,t)=>`<button class="${f[k].includes(v)?'on':''}" data-t="${k}|${e(v)}">${e(t||v)}</button>`;
+sheet(`<h2>絞り込み</h2><p class="hint">同じ項目内は「どれか」、別項目どうしは「すべて」に当てはまるもの。文字はスペース区切りで「すべて含む」。</p><div class="fg"><label>文字検索（タイトル・出演者・メモ・収録内容）</label><input id="q" value="${e(f.q)}"></div>
+<h3>出演者・グループ</h3><div class="opt">${Object.entries(ws).sort((a,b)=>b[1]-a[1]).map(([w,c])=>ch('w',w,w+' '+c)).join('')}</div><h3>所持状況</h3><div class="opt">${OWN.map(o=>ch('o',o)).join('')}</div>
+<div class="row"><button data-a="rs">リセット</button><button class="on" data-a="cl">結果を見る</button></div>`)}
+function menu(){sheet(`<h2>メニュー</h2><h3>見かた</h3><p class="hint">上のタブでジャンルを切り替え。カードをタップすると収録内容（特典・放送回など）が開きます。名前のタグをタップすると、ジャンルをまたいでその人の一覧が出ます。「🔍 検索」で文字・出演者・所持状況を絞り込めます。</p>
+<h3>管理</h3><div class="row"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON':'編集モードにする'}</button>${ed?'<button data-a="add">＋項目を追加</button><button data-a="ex">書き出し</button><button data-a="im">読み込み</button><button data-a="rr">編集を破棄</button>':''}</div>${ed?'<p class="hint">編集内容はこの端末のブラウザにだけ保存。みんなに反映するには「書き出し」したdata.jsonをGitHubに置き換えます。</p>':''}<div class="row"><button data-a="cl">閉じる</button></div>`)}
+document.addEventListener('click',t=>{const x=t.target,d=x.dataset;
+if(d.g!==undefined){g=d.g;lim=60;draw()}
+else if(d.w!==undefined){f={q:'',w:[d.w],y:[],o:[]};g='すべて';lim=60;$('#sh').className='';draw();scrollTo(0,0)}
+else if(d.x){const[k,v]=d.x.split('|');if(k=='q')f.q='';else f[k]=f[k].filter(a=>a!=v);draw()}
+else if(x.id=='mo'){lim+=60;draw()}
+else if(x.id=='bs')filt();else if(x.id=='bm')menu();
+else if(d.t){const[k,v]=d.t.split('|'),a=f[k],j=a.indexOf(v);j<0?a.push(v):a.splice(j,1);x.classList.toggle('on')}
+else if(d.a=='cl'||x.id=='sh')close();
+else if(d.a=='rs'){f={q:'',w:[],y:[],o:[]};filt()}
+else if(d.a=='ed'){ed=!ed;menu()}
+else if(d.a=='add'){D.items.unshift({t:'新規',g:g=='すべて'?'ドラマ':g,s:'',w:[],n:'',o:'所持',y:'',k:[]});save();form(0)}
+else if(d.a=='del'){if(confirm('削除しますか？')){D.items.splice(+d.n,1);save();close()}}
+else if(d.a=='all'){const i=D.items[+d.n];x.parentNode.outerHTML=i.k.slice(80).map(k=>`<div class="k">${e(k[0])}<small>${[k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`).join('')}
+else if(d.a=='ex'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='data.json';a.click()}
+else if(d.a=='im'){const i=document.createElement('input');i.type='file';i.onchange=()=>i.files[0].text().then(s=>{D=JSON.parse(s);save();close()});i.click()}
+else if(d.a=='rr'){if(confirm('この端末での編集をすべて破棄します。')){localStorage.removeItem(KEY);location.reload()}}
+else{const c=x.closest('.c');if(c)detail(+c.dataset.i)}});
+document.addEventListener('input',t=>{const x=t.target;if(x.id=='q'){f.q=x.value}
+else if(x.dataset.e){const i=D.items[+$('#pn').dataset.n],k=x.dataset.e;i[k]=k=='w'?x.value.split(',').map(a=>a.trim()).filter(Boolean):k=='k'?x.value.split('\n').filter(a=>a.trim()).map(l=>{const p=l.split('|');return[p[0]||'',p[1]||'',p[2]||'',p[3]||'']}):x.value;save()}});
 init();
 </script></body></html>
