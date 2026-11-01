@@ -104,6 +104,47 @@ input[type=date]{display:block;width:100%;min-width:0;max-width:100%;min-height:
 .sh{margin:22px 0 2px;font-size:13px;font-weight:700;letter-spacing:.12em;border-bottom:1px solid var(--fg);padding-bottom:3px}.sh i{font-style:normal;font-weight:400;color:var(--mu);font-size:11px;margin-left:8px;letter-spacing:0}
 .lp{position:sticky;top:0;z-index:2;background:var(--bg);border:1px solid var(--fg);padding:4px 10px;margin:6px 0;max-height:34vh;overflow:auto;pointer-events:none}
 .fbar{position:sticky;bottom:0;z-index:2;display:flex;gap:8px;background:var(--bg);border-top:1px solid var(--fg);padding:10px 0;margin-top:16px}.fbar button{min-height:44px}
+
+/* ===== デザイン調整：枠（カード）で統一 ===== */
+:root{--bd:#c9c9c9;--rad:14px}
+@media(prefers-color-scheme:dark){:root{--bd:#4a4a4a}}
+button,input,select,textarea{border-color:var(--bd);border-radius:10px;padding:7px 14px}
+button{border-radius:999px;border-color:var(--fg)}button.ghost{border-color:transparent}
+button.chip,button.fv{border-color:var(--bd)}button.fv{border-color:transparent}
+input:focus,select:focus,textarea:focus{border-color:var(--fg);outline:0}
+header{border-bottom-color:var(--ln)}
+h1{margin-bottom:6px}.sub{margin-bottom:20px}
+.box{border-color:var(--bd);border-radius:var(--rad);background:var(--soft);padding:14px 16px}
+.box b{border-radius:999px;padding:0 8px}
+.menu{border-top:0}.menu li{margin:0 0 10px}
+.menu a{border:1px solid var(--bd);border-radius:var(--rad);padding:14px 16px;column-gap:12px}
+.tabs{border-bottom:0;gap:8px;padding:2px 18px 12px}
+.tabs button{border:1px solid var(--bd);border-radius:999px;padding:5px 14px;color:var(--fg)}
+.tabs button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.ch span{border-radius:999px;border-color:var(--bd);padding:1px 12px}
+.r{border:1px solid var(--bd);border-radius:var(--rad);padding:12px 46px 12px 14px;margin:0 0 10px}
+.r .fv{right:4px;top:6px}.r .tt{line-height:1.5}.r .p,.r .m{margin-top:6px}
+.gh,.sh,.yh{border:0;border-left:3px solid var(--fg);padding:1px 0 1px 10px;margin:28px 0 12px;line-height:1.3}
+.yh{margin:18px 0 8px}
+.p,.b,.chip{border-radius:999px}.p{border-color:var(--bd)}.p.g{border-color:var(--fg)}
+.chip{border-color:var(--bd);padding:3px 12px}.chip.on{border-color:var(--fg)}
+.b{padding:0 7px}
+#pn{border-left:0;padding:16px 18px 60px}
+@media(min-width:600px){#pn{border-radius:20px 0 0 20px}}
+.ro{border-color:var(--bd);border-radius:12px;padding:10px 14px}
+#kl{border:1px solid var(--bd);border-radius:var(--rad);padding:0 14px 6px;margin-top:10px}
+#kl .ep:last-child,#kl .k:last-child{border-bottom:0}
+.lp{border:1px dashed var(--mu);border-radius:var(--rad);padding:8px 12px}
+.lp .r{border:0;padding:6px 40px 6px 0;margin:0}
+.fr{border:1px solid var(--bd);border-radius:var(--rad);padding:6px 14px 14px;margin:14px 0}
+.fr h4{margin:12px 0 8px}
+.lkrow{background:var(--soft);border:0;border-radius:12px;padding:6px 12px 12px;margin:8px 0}
+.fbar{border-top-color:var(--ln)}.fbar button{border-radius:999px;min-height:46px}
+.dng{border-color:var(--mu);color:var(--mu)}
+.ppl{border:1px solid var(--bd);border-radius:var(--rad);padding:12px 16px;margin-top:12px}
+.guide li{border:1px solid var(--bd);border-radius:var(--rad);padding:12px 14px 12px 46px;margin:0 0 10px}.guide li:before{left:14px;top:15px}
+.lk{border:1px solid var(--bd);border-radius:var(--rad);padding:12px 16px;margin:0 0 10px}
+#toast{border-radius:999px}
 </style>
 </head>
 <body>
@@ -330,7 +371,7 @@ function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.le
 function form(n){anchor(n);const i=D.items[n];
  const pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:8px 0 2px">${e(g)}（グループ名義）</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}全員</button>${ms.map(m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`).join('')}`).join('');
  sheet(`<div class="fg">${xbtn('完了')}<div class="lp" id="lp">${lpH(i,n)}</div><p class="row" style="margin:6px 0"><button data-a="pv" data-n="${n}">詳細の見え方を確認</button></p>
- <label>リスト</label><select data-e="l"><option value="have" ${i.l=='have'?'selected':''}>所持リスト</option><option value="want" ${i.l=='want'?'selected':''}>求めリスト</option></select>
+ <div class="fr"><h4>基本情報</h4><label>リスト</label><select data-e="l"><option value="have" ${i.l=='have'?'selected':''}>所持リスト</option><option value="want" ${i.l=='want'?'selected':''}>求めリスト</option></select>
  <label>タイトル</label><input data-e="t" value="${e(i.t)}">
  <label>よみ（並び順用・ひらがな。空でもOK）</label><input data-e="yo" value="${e(i.yo||'')}">
  <label>ジャンル</label><select data-e="g">${GENRES.map(x=>`<option ${x==i.g?'selected':''}>${x}</option>`).join('')}</select>
@@ -338,13 +379,13 @@ function form(n){anchor(n);const i=D.items[n];
  <label>出演者・グループ（タップで追加／外す）</label><div>${pal}</div>
  <label>すべてのタグ（直接入力もできます・カンマ区切り）</label><input data-e="w" id="wi" value="${e(i.w.join(','))}">
  <label>メモ（先頭に【NEW】でNEW表示）</label><input data-e="n" value="${e(i.n)}">
- <label>求め度（求めリストのみ）</label><select data-e="p"><option value="">未設定</option>${WANT.map(x=>`<option ${x==i.p?'selected':''}>${x}</option>`).join('')}</select>
+ </div><div class="fr"><h4>配布・交換</h4><label>求め度（求めリストのみ）</label><select data-e="p"><option value="">未設定</option>${WANT.map(x=>`<option ${x==i.p?'selected':''}>${x}</option>`).join('')}</select>
  <label>配布</label><select data-e="o"><option value="">未設定</option>${OWN.map(x=>`<option ${x==i.o?'selected':''}>${x}</option>`).join('')}</select>
  <label>配布方法（例：Googleドライブ／DM／郵送）</label><input data-e="m" value="${e(i.m)}">
  <label>画質（例：1080p／720p／DVD画質／音声のみ）</label><input data-e="q" value="${e(i.q)}">
  <label>交換比率（例：1:1／2:1）</label><input data-e="r" value="${e(i.r)}">
  <label>有償時の値段（例：500円／1,000円）</label><input data-e="c" value="${e(i.c)}">
- <h4 style="margin-top:22px">収録内容 ${i.k.length}件</h4>
+ </div><div class="fr"><h4>収録内容 ${i.k.length}件</h4>
  <div class="lkrow"><label>見出し（任意：本編／特典映像など。同じ見出しの回がまとまります）</label><div>${kchips(i)}</div><input id="qs" value="${e(LK)}">
  <label>話数・回（例：第3話／#3／第3夜）</label><input id="qe">
  <label>サブタイトル・内容（特典名・曲名など）</label><input id="qt">
@@ -354,17 +395,17 @@ function form(n){anchor(n);const i=D.items[n];
  <div class="row"><button class="on" data-a="qadd">この回を追加</button></div></div>
  <div class="row"><input type="file" id="kf" accept=".md,.txt,.csv" multiple hidden><button data-a="kf">ファイルから追加（.csv/.md/.txt）</button></div>
  <details style="margin-top:12px"><summary class="hint" style="cursor:pointer">全件をテキストで編集・削除（貼り付け可）</summary><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea></details>
- <div class="row"><button data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
+ </div><div class="row"><button class="dng" data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
 function filt(){const L=LISTS[route()];if(!L)return;
  const ws=Object.keys(D.groups),inG=new Set(ws.flatMap(g=>D.groups[g])),rest={};
  D.items.forEach(i=>i.w.forEach(w=>{if(!D.groups[w]&&!inG.has(w))rest[w]=1}));
  const ch=(k,v,t)=>`<button class="chip ${f[k].includes(v)?'on':''}" data-t="${k}|${e(v)}">${e(t||v)}</button>`;
  sheet(`${xbtn()}<h2>絞り込み</h2><p class="hint">同じ項目の中は「どれか」、別の項目どうしは「すべて」に当てはまるものが出ます。文字はスペース区切りで「すべて含む」。</p>
- <div class="fg"><label>文字（タイトル・出演者・メモ・収録内容）</label><input id="q" type="search" enterkeyhint="search" autocomplete="off" value="${e(f.q)}"></div>
- <h4>ジャンル</h4><div>${L.g.map(x=>ch('g',x)).join('')}</div>
- <details${f.w.length?' open':''} style="margin-top:6px"><summary style="cursor:pointer;font-weight:700;margin:14px 0 6px">出演者で絞る${f.w.length?'（'+f.w.length+'）':''}</summary>${ws.map(g=>`<div class="hint" style="margin:8px 0 2px">${e(g)}</div>${ch('w',g,g+'（全員）'+' '+cntW(g))}${D.groups[g].map(m=>ch('w',m,m+' '+cntW(m))).join('')}`).join('')}
+ <div class="fg fr"><label>文字（タイトル・出演者・メモ・収録内容）</label><input id="q" type="search" enterkeyhint="search" autocomplete="off" value="${e(f.q)}"></div>
+ <div class="fr"><h4>ジャンル</h4><div>${L.g.map(x=>ch('g',x)).join('')}</div></div>
+ <details class="fr"${f.w.length?' open':''}><summary style="cursor:pointer;font-weight:700;padding:10px 0">出演者で絞る${f.w.length?'（'+f.w.length+'）':''}</summary>${ws.map(g=>`<div class="hint" style="margin:8px 0 2px">${e(g)}</div>${ch('w',g,g+'（全員）'+' '+cntW(g))}${D.groups[g].map(m=>ch('w',m,m+' '+cntW(m))).join('')}`).join('')}
  <div class="hint" style="margin:8px 0 2px">その他</div>${Object.keys(rest).sort((a,b)=>cntW(b)-cntW(a)).map(w=>ch('w',w,w+' '+cntW(w))).join('')}</details>
- ${L.l=='have'?`<h4>配布</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div>`:`<h4>求め度</h4><div>${WANT.map(o=>ch('o',o)).join('')}</div>`}
+ ${L.l=='have'?`<div class="fr"><h4>配布</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div></div>`:`<div class="fr"><h4>求め度</h4><div>${WANT.map(o=>ch('o',o)).join('')}</div></div>`}
  <div class="fbar"><button data-a="rs">リセット</button><button class="on" data-a="cl" id="fc" style="flex:1">${fcount()}件を見る</button></div>`);setTimeout(()=>{const q=$('#q');if(q&&!f.q)q.focus()},60)}
 function adminMenu(){
  sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
