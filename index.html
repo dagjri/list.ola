@@ -152,7 +152,7 @@ function parseK(tx){const o=[];let c=null;
   if(m&&m.index==0){const d=m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');c=[d,d,'放送回',h.slice(m[0].length).replace(/^[\s　:：,，]+/,'')];o.push(c)}
   else if(c)c[3]=(c[3]?c[3]+' / ':'')+h;
   else o.push([h,'','',''])});return o}
-function mergeK(i,a){const K=k=>k[0]+'|'+k[1],m=new Map(i.k.map(k=>[K(k),k]));a.forEach(k=>m.set(K(k),k));i.k=[...m.values()].sort((x,y)=>(x[1]||'~').localeCompare(y[1]||'~'))}
+function mergeK(i,a){const K=k=>k[0]+'|'+k[1],m=new Map(i.k.map(k=>[K(k),k]));a.forEach(k=>m.set(K(k),k));const en=k=>{const q=(k[0]||'').match(/\d+/);return q?+q[0]:1e9};i.k=[...m.values()].sort((x,y)=>{const a=x[1]||'~',b=y[1]||'~';return a==b?en(x)-en(y):a.localeCompare(b)})}
 const mk=()=>touch();
 function shareL(){copy(location.href.split('#')[0].split('?')[0]+'?v=have#/have')}
 let KQ='',KL=80,KI=0;
@@ -301,7 +301,7 @@ const xbtn=t=>`<p style="text-align:right;margin:0"><button data-a="cl">${t||'�
 const kh=k=>{const d=k[1]||k[0],m=(k[3]||'').split(' / '),w=/^出演者[:：]/.test(m[0])?m.shift().replace(/^出演者[:：]\s*/,'').split(/[,、，]\s*/):null;
  if(!w||!DR.test(d))return`<div class="k">${e(k[0])}<small>${[k[1]==k[0]?'':k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`;
  const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),hl=n=>q.some(t=>n.toLowerCase().includes(t))?`<b>${e(n)}</b>`:e(n);
- return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}${w.map(hl).join('、')}</span></div>`}
+ return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${k[0]&&k[0]!=k[1]&&k[0]!=d?`<span style="display:block;font-weight:600">${e(k[0])}</span>`:''}${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}${w.map(hl).join('、')}</span></div>`}
 function detail(n){anchor(n);if(ed)return form(n);const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
  sheet(`${xbtn()}<div class="gl">${e(i.g)}</div><h2><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button> ${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
@@ -322,7 +322,8 @@ function form(n){anchor(n);const i=D.items[n];
  <label>交換比率（例：1:1／2:1）</label><input data-e="r" value="${e(i.r)}">
  <label>有償時の値段（例：500円／1,000円）</label><input data-e="c" value="${e(i.c)}">
  <h4 style="margin-top:22px">収録内容 ${i.k.length}件</h4>
- <div class="lkrow"><label>内容（特典名・曲名・回のタイトルなど）</label><input id="qt">
+ <div class="lkrow"><label>話数・回（例：第3話／#3／第3夜）</label><input id="qe">
+ <label>サブタイトル・内容（特典名・曲名など）</label><input id="qt">
  <label>日付（任意：放送回や公演日）</label><input type="date" id="qd">
  <label>種別（任意：特典映像・本編・メイキングなど）</label><input id="qs">
  <label>出演者（任意・タップで選択）</label><div>${qchips(i)}</div><input id="qx" placeholder="名前を追加（カンマ区切り）" style="margin-top:6px">
@@ -367,7 +368,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.pick!==undefined){const i=D.items[+$('#pn').dataset.n],j=i.w.indexOf(d.pick);j<0?i.w.push(d.pick):i.w.splice(j,1);x.classList.toggle('on');$('#wi').value=i.w.join(',');touch()}
  else if(d.a=='cl')closeSheet();
  else if(d.a=='kf')$('#kf').click();
- else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=$('#qt').value.trim(),ss=$('#qs').value.trim();if(!dt&&!tt){toast('内容か日付を入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),(ws.length?'出演者: '+ws.join(', '):'')+(nt?(ws.length?' / ':'')+nt:'')]]);mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='ins')inst();
+ else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),(ws.length?'出演者: '+ws.join(', '):'')+(nt?(ws.length?' / ':'')+nt:'')]]);mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){if(ed&&dirty){await saveDB(true);if(dirty){toast('保存できていないため、編集モードを終了できません');return}}ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
