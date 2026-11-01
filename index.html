@@ -1,0 +1,75 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MEDIA ARCHIVE</title>
+<style>
+:root{--bg:#fff;--fg:#111;--mu:#888;--ln:#e6e6e6;--ac:#111;--ac2:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#111;--fg:#f2f2f2;--mu:#999;--ln:#2e2e2e;--ac:#f2f2f2;--ac2:#111}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.6 -apple-system,"Hiragino Sans",sans-serif}
+header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--ln);padding:12px 16px;z-index:5}
+.top{display:flex;justify-content:space-between;align-items:center}h1{font-size:15px;letter-spacing:.2em;margin:0}
+button,select,input{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:6px 10px}
+button{cursor:pointer}button.on{background:var(--ac);color:var(--ac2);border-color:var(--ac)}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:10px 0 0;padding-bottom:2px}.tabs button{white-space:nowrap}
+.bar{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px}.bar input{flex:1;min-width:140px}
+main{padding:0 16px 60px;overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}
+th{text-align:left;color:var(--mu);font-weight:400;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--ln)}
+td{padding:9px 8px;border-bottom:1px solid var(--ln);vertical-align:top}tr.r{cursor:pointer}tr.r:hover{background:var(--ln)}
+.t{font-weight:600}.tag{font-size:11px;border:1px solid var(--ln);border-radius:10px;padding:1px 8px;white-space:nowrap}
+.msg{color:var(--mu);padding:8px 16px;font-size:12px}.warn{background:var(--ln)}
+#sh{position:fixed;inset:0;background:#0006;display:none;z-index:9}#sh.on{display:block}
+#pn{position:absolute;right:0;top:0;bottom:0;width:min(520px,100%);background:var(--bg);overflow:auto;padding:18px}
+.f{margin:0 0 12px}.f label{display:block;font-size:12px;color:var(--mu)}.f input,.f select{width:100%}
+a{color:inherit;text-decoration:underline;cursor:pointer}ul{padding-left:18px;margin:4px 0}
+</style></head><body>
+<header><div class="top"><h1>MEDIA ARCHIVE</h1><div><button id="md"></button></div></div><div class="tabs" id="tb"></div></header>
+<div id="ed" class="msg warn" hidden>編集モード：変更はこの端末のブラウザにだけ保存されます。みんなに反映するには「書き出し」→ GitHubの data.json を差し替えてください。</div>
+<div class="bar" id="br"></div><div class="msg" id="ct"></div><main id="ls"></main>
+<div id="sh"><div id="pn"></div></div>
+<script>
+const KEY='media-archive-v1',LB={people:'出演者',works:'作品・番組',products:'商品',contents:'コンテンツ',sounds:'音源',lives:'公演'};
+const REL={people:{'所属グループ':'people'},works:{'出演者':'people'},sounds:{'収録商品':'products'},contents:{'作品・番組':'works','商品':'products','公演':'lives'}};
+const FIL=['区分','種別','商品種別','音源種別','公演形態','所持状況','確認状況'];
+const FIX={'所持状況':['所持','一部所持','未所持','確認中','対象外'],'確認状況':['公式確認済み','複数情報で確認','未確認','情報不足']};
+let DB,tab='works',q='',fl={},edit=false,lim=150,cur=null;
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sp=v=>String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){alert('保存できませんでした')}};
+async function init(){try{const b=await(await fetch('data.json')).json();let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}DB=s&&s.v===b.v?s:b}catch(e){$('#ls').textContent='data.json を読み込めません。GitHub Pages上で開いてください。';return}
+draw()}
+function opts(k,c){return FIX[c]||[...new Set(DB.rows[k].map(r=>r[c]).filter(Boolean))].sort()}
+function draw(){const k=tab,C=DB.cols[k];
+$('#md').textContent=edit?'編集中':'閲覧中';$('#md').className=edit?'on':'';$('#ed').hidden=!edit;
+$('#tb').innerHTML=Object.keys(LB).map(x=>`<button class="${x==k?'on':''}" data-t="${x}">${LB[x]} ${DB.rows[x].length}</button>`).join('');
+let h=`<input id="q" placeholder="検索" value="${esc(q)}">`;
+FIL.filter(c=>C.includes(c)).forEach(c=>h+=`<select data-f="${c}"><option value="">${c}：すべて</option>${opts(k,c).map(o=>`<option ${fl[c]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`);
+if(edit)h+=`<button id="ad">＋追加</button><button id="ex">書き出し</button><button id="im">読み込み</button><button id="rs">リセット</button>`;
+$('#br').innerHTML=h;
+const rows=DB.rows[k].map((r,i)=>[r,i]).filter(([r])=>(!q||Object.values(r).join(' ').toLowerCase().includes(q.toLowerCase()))&&Object.entries(fl).every(([c,v])=>!v||r[c]===v));
+const show=C.filter(c=>c!='情報源URL').slice(0,5);
+$('#ct').textContent=rows.length+'件';
+$('#ls').innerHTML=`<table><tr>${show.map(c=>`<th>${c}</th>`).join('')}</tr>`+rows.slice(0,lim).map(([r,i])=>`<tr class="r" data-i="${i}">${show.map((c,j)=>`<td class="${j?'':'t'}">${j&&(c=='所持状況'||c=='確認状況'||c=='区分'||c=='種別')&&r[c]?`<span class="tag">${esc(r[c])}</span>`:esc(r[c])}</td>`).join('')}</tr>`).join('')+'</table>'+(rows.length>lim?`<p><button id="mo">もっと見る</button></p>`:'');}
+function panel(i){cur=i;const k=tab,r=DB.rows[k][i],C=DB.cols[k];let h=`<p><button id="cl">閉じる</button>${edit?' <button id="dl">削除</button>':''}</p>`;
+C.forEach(c=>{const rl=REL[k]&&REL[k][c];let v=r[c]||'';h+=`<div class="f"><label>${c}</label>`;
+if(edit){const o=FIX[c]||(FIL.includes(c)?opts(k,c):null);h+=o?`<select data-e="${c}"><option></option>${o.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('')}</select>`:`<input data-e="${c}" value="${esc(v)}">`}
+else if(rl&&v){h+=sp(v).map(x=>DB.rows[rl].some(y=>y[DB.cols[rl][0]]===x)?`<a data-g="${rl}|${esc(x)}">${esc(x)}</a>`:esc(x)).join(' / ')}
+else if(c=='情報源URL'&&v)h+=`<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>`;else h+=esc(v)||'<span style="color:var(--mu)">—</span>';h+='</div>'});
+const t=r[C[0]];Object.entries(REL).forEach(([k2,m])=>Object.entries(m).forEach(([c,tg])=>{if(tg!=k)return;const xs=DB.rows[k2].filter(y=>sp(y[c]).includes(t));
+if(xs.length)h+=`<div class="f"><label>${LB[k2]}（${c}で紐づく ${xs.length}件）</label><ul>${xs.slice(0,60).map(y=>`<li><a data-g="${k2}|${esc(y[DB.cols[k2][0]])}">${esc(y[DB.cols[k2][0]])}</a></li>`).join('')}</ul>${xs.length>60?'…他':''}</div>`}));
+$('#pn').innerHTML=h;$('#sh').className='on'}
+function go(k,t){tab=k;q='';fl={};const i=DB.rows[k].findIndex(r=>r[DB.cols[k][0]]===t);draw();if(i>=0)panel(i)}
+document.addEventListener('click',e=>{const t=e.target;
+if(t.id=='md'){edit=!edit;$('#sh').className='';draw()}
+else if(t.dataset.t){tab=t.dataset.t;q='';fl={};lim=150;draw()}
+else if(t.id=='mo'){lim+=300;draw()}
+else if(t.id=='cl'||t.id=='sh'){$('#sh').className=''}
+else if(t.dataset.g){const[a,b]=t.dataset.g.split('|');go(a,b)}
+else if(t.id=='ad'){const o={};DB.cols[tab].forEach(c=>o[c]='');o[DB.cols[tab][0]]='新規';if(o['所持状況']==='')o['所持状況']='所持';if(o['確認状況']==='')o['確認状況']='未確認';DB.rows[tab].unshift(o);save();draw();panel(0)}
+else if(t.id=='dl'){if(confirm('削除しますか？')){DB.rows[tab].splice(cur,1);save();$('#sh').className='';draw()}}
+else if(t.id=='ex'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:'application/json'}));a.download='data.json';a.click()}
+else if(t.id=='im'){const f=document.createElement('input');f.type='file';f.accept='.json';f.onchange=()=>f.files[0].text().then(s=>{DB=JSON.parse(s);save();draw()});f.click()}
+else if(t.id=='rs'){if(confirm('この端末での編集をすべて破棄して元のデータに戻します。')){localStorage.removeItem(KEY);location.reload()}}
+else{const tr=t.closest('tr.r');if(tr)panel(+tr.dataset.i)}});
+document.addEventListener('input',e=>{const t=e.target;if(t.id=='q'){q=t.value;lim=150;const p=t.selectionStart;draw();const n=$('#q');n.focus();n.setSelectionRange(p,p)}
+else if(t.dataset.e){DB.rows[tab][cur][t.dataset.e]=t.value;save();draw()}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.f){fl[t.dataset.f]=t.value;lim=150;draw()}
+else if(t.dataset.e&&t.tagName=='SELECT'){DB.rows[tab][cur][t.dataset.e]=t.value;save();draw()}});
+init();
+</script></body></html>
