@@ -94,6 +94,7 @@ footer a{margin-right:14px}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;font-size:13px;z-index:20;display:none}
 .r{position:relative;padding-right:40px}.r .fv{position:absolute;right:0;top:8px}
 .fv{border:0;background:none;min-height:36px;min-width:36px;padding:0;font-size:20px;line-height:1;color:var(--fg)}h2 .fv{vertical-align:middle}
+.vw .back,.vw #ft,.vw #bl{display:none}
 </style>
 </head>
 <body>
@@ -121,7 +122,8 @@ let D,S=null,ed=false,dirty=false,lim=60,em='',keepF=false;
 let f={q:'',g:[],w:[],o:[]},tab='すべて';
 const $=s=>document.querySelector(s);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const route=()=>location.hash.replace(/^#\/?/,'').split('?')[0];
+const VW=new URLSearchParams(location.search).get('v')=='have';if(VW)document.documentElement.classList.add('vw');
+const route=()=>VW?'have':location.hash.replace(/^#\/?/,'').split('?')[0];
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2200)};
 const linkify=s=>e(s).replace(/https?:\/\/[^\s<>"']+/g,u=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
 
@@ -142,9 +144,17 @@ function parseK(tx){const o=[];let c=null;
   else o.push([h,'','',''])});return o}
 function mergeK(i,a){const m=new Map(i.k.map(k=>[k[1]||k[0],k]));a.forEach(k=>m.set(k[1]||k[0],k));i.k=[...m.values()].sort((x,y)=>(x[1]||'~').localeCompare(y[1]||'~'))}
 const mk=()=>{dirty=true;$('#sv').disabled=false;$('#ebt').textContent='編集モード　●未保存'};
-const LT=()=>{const L=LISTS[route()];return[L,D.items.filter(i=>match(i,L,true))]};
-function shareL(){const[L]=LT(),u=location.href.split('#')[0]+'#/'+route();navigator.share?navigator.share({title:(D.title||'list.ola')+' '+L.n,url:u}).catch(()=>{}):copy(u)}
-function copyL(){const[L,r]=LT();copy((D.title||'list.ola')+' '+L.n+'（'+r.length+'件）\n'+r.map(i=>{const x=[i.o,i.q,i.m,i.r&&'比'+i.r].filter(Boolean);return i.g+' / '+i.t+(x.length?'（'+x.join('・')+'）':'')}).join('\n'))}
+function shareL(){copy(location.href.split('#')[0].split('?')[0]+'?v=have#/have')}
+let KQ='',KL=80,KI=0;
+const wsF=()=>f.w.flatMap(w=>D.groups[w]||[w]).map(a=>a.toLowerCase());
+function hitK(i){const q=f.q.toLowerCase().split(/\s+/).filter(Boolean),ws=wsF();if(!q.length&&!ws.length)return'';
+ const h=i.k.filter(k=>{const s=k.join(' ').toLowerCase();return q.every(w=>s.includes(w))&&(!ws.length||ws.some(w=>s.includes(w)))});
+ return h.length?'　<b>該当 '+h.length+'回</b>'+(h.length<=5?'：'+h.map(k=>e(k[1]||k[0])).join('、'):''):''}
+function klist(i){const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),r=i.k.filter(k=>{const s=k.join(' ').toLowerCase();return q.every(w=>s.includes(w))});
+ return(q.length?`<p class="hint">${r.length}回</p>`:'')+r.slice(0,KL).map(kh).join('')+(r.length>KL?`<p><button data-a="kmore">さらに表示（残り${r.length-KL}件）</button></p>`:'')}
+function kbox(i){const c={};i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>c[a]=(c[a]||0)+1)});
+ const ch=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,40);
+ return`<h4>収録内容 ${i.k.length}件</h4><div class="fg"><input id="kq" placeholder="名前・日付で絞り込み" value="${e(KQ)}"></div>${ch.length?`<div style="margin-top:8px">${ch.map(a=>`<button class="chip" data-kq="${e(a[0])}">${e(a[0])}<i>${a[1]}</i></button>`).join('')}</div>`:''}<div id="kl">${klist(i)}</div>`}
 function inst(){if(DP){DP.prompt();DP=null}else if(matchMedia('(display-mode:standalone)').matches||navigator.standalone)toast('すでにホーム画面から開いています');else alert(/iPhone|iPad|iPod/.test(navigator.userAgent)?'Safariの共有ボタン（□↑）から「ホーム画面に追加」を選んでください':'ブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選んでください')}
 /* ================= Supabase（ログイン・保存） ================= */
 const sb=(p,o={})=>fetch(C.url+p,{method:o.method||'GET',body:o.body,headers:{apikey:C.key,'Content-Type':'application/json',...((o.tk||!/^sb_/.test(C.key))?{Authorization:'Bearer '+(o.tk||C.key)}:{}),...(o.h||{})}});
@@ -211,7 +221,7 @@ function pGuide(){return head('見かた','')+`<ol class="guide">
 <li><b>メンバー名で探す</b>「出演者から探す」から、なにわ男子・SixTONES の各メンバーを選べます。グループ名義の項目は、メンバー全員分として含まれます。</li>
 <li><b>検索で絞り込み</b>文字・ジャンル・出演者・配布を組み合わせられます。同じ項目の中は「どれか」、別の項目どうしは「すべて」に当てはまるものが出ます。選んだ条件は一覧の上に出て、タップで外せます。</li>
 <li><b>お気に入り</b>各行の ☆ をタップ。ログイン不要で、この端末のブラウザに保存されます（端末やブラウザを変えると引き継がれません）。</li>
-<li><b>共有</b>所持リストの「共有」でリンク、「一覧をコピー」で絞り込み中の一覧をテキストで送れます。</li>
+
 <li><b>ホーム画面に追加</b>ページ下の「ホーム画面に追加」から、アプリのように起動できます。</li></ol>`}
 
 function pPeople(){
@@ -229,12 +239,12 @@ function pList(k){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&L.g.includes
  const chips=[...(f.q?[['q',f.q]]:[]),...f.g.map(v=>['g',v]),...f.w.map(v=>['w',v]),...f.o.map(v=>['o',v])];
  let h='',last='';
  rows.slice(0,lim).forEach(([i,n])=>{if(tab=='すべて'&&L.g.length>1&&i.g!=last){last=i.g;h+=`<h3 class="gh">${e(i.g)}</h3>`}
-  h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button><div class="gl">${e(i.g)}</div><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.o?`<span class="b">${e(i.o)}</span>`:''}${i.r?`<span class="b">比 ${e(i.r)}</span>`:''}</div>${tags(i)}${i.k.length?`<div class="m">収録 ${i.k.length}件 ›</div>`:''}</div>`});
+  h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button><div class="gl">${e(i.g)}</div><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.o?`<span class="b">${e(i.o)}</span>`:''}${i.r?`<span class="b">比 ${e(i.r)}</span>`:''}</div>${tags(i)}${i.k.length?`<div class="m">収録 ${i.k.length}件${hitK(i)} ›</div>`:''}</div>`});
  return head(L.n,L.sub+(L.d?'　'+L.d:''))+
  `<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?base.length:base.filter(i=>i.g==t).length}</i></button>`).join('')}</div>
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
  <p class="hint">${rows.length?rows.length+'件　行をタップで詳細':''}${ed?'　編集モード：行をタップで編集':''}</p>
- ${L.fav?'':`<p class="row" style="margin:0 0 6px"><button data-a="sh">共有</button><button data-a="cp">一覧をコピー</button></p>`}
+ ${S&&k=='have'&&!VW?`<p class="row" style="margin:0 0 6px"><button data-a="sh">所持リストの共有リンクをコピー</button></p>`:''}
  ${ed?`<p><button data-a="add">＋この一覧に追加</button></p>`:''}${h||'<p class="empty">該当するものがありません</p>'}${rows.length>lim?'<p><button id="mo">もっと見る</button></p>':''}`}
 
 /* ================= 描画 ================= */
@@ -258,10 +268,10 @@ addEventListener('keydown',t=>{if(t.key=='Escape')closeSheet();if(t.key=='Enter'
 function sheet(h){$('#pn').innerHTML=h;$('#sh').className='on'}
 const closeSheet=()=>{if($('#sh').className){$('#sh').className='';render()}};
 const xbtn=t=>`<p style="text-align:right;margin:0"><button data-a="cl">${t||'閉じる'}</button></p>`;
-const kh=k=>`<div class="k">${e(k[0])}<small>${[k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`;
-function detail(n){if(ed)return form(n);const i=D.items[n];
+const kh=k=>`<div class="k">${e(k[0])}<small>${[k[1]==k[0]?'':k[1],k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`;
+function detail(n){if(ed)return form(n);const i=D.items[n];KI=n;KL=80;KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
- sheet(`${xbtn()}<div class="gl">${e(i.g)}</div><h2><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button> ${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?`<h4>収録内容 ${i.k.length}件</h4>`+i.k.slice(0,80).map(kh).join('')+(i.k.length>80?`<p><button data-a="all" data-n="${n}">残りも表示</button></p>`:''):''}`)}
+ sheet(`${xbtn()}<div class="gl">${e(i.g)}</div><h2><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button> ${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function form(n){const i=D.items[n];
  const pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:8px 0 2px">${e(g)}（グループ名義）</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}全員</button>${ms.map(m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`).join('')}`).join('');
  sheet(`<div class="fg">${xbtn('完了')}
@@ -302,6 +312,7 @@ const setF=w=>goAll({q:'',g:[],w:[w],o:[]});
 document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();return}
  const x=t.target.closest('button,span,a,.r')||t.target,d=x.dataset||{};
  if(d.fv!==undefined){const i=D.items[+d.fv];togF(i);x.textContent=isF(i)?'★':'☆';render()}
+ else if(d.kq!==undefined){KQ=d.kq;$('#kq').value=KQ;KL=80;$('#kl').innerHTML=klist(D.items[KI])}
  else if(d.pw!==undefined)setF(d.pw);
  else if(d.w!==undefined)setF(d.w);
  else if(d.tab!==undefined){tab=d.tab;lim=60;render()}
@@ -311,7 +322,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.t){const[k,v]=d.t.split('|'),a=f[k],j=a.indexOf(v);j<0?a.push(v):a.splice(j,1);x.classList.toggle('on')}
  else if(d.pick!==undefined){const i=D.items[+$('#pn').dataset.n],j=i.w.indexOf(d.pick);j<0?i.w.push(d.pick):i.w.splice(j,1);x.classList.toggle('on');$('#wi').value=i.w.join(',');dirty=true}
  else if(d.a=='cl')closeSheet();
- else if(d.a=='kf')$('#kf').click();else if(d.a=='sh')shareL();else if(d.a=='cp')copyL();else if(d.a=='ins')inst();
+ else if(d.a=='kf')$('#kf').click();else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
@@ -327,7 +338,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
 document.addEventListener('submit',t=>{if(t.target.id=='tq'){t.preventDefault();goAll({q:$('#tqi').value.trim(),g:[],w:[],o:[]})}});
 document.addEventListener('input',t=>{const x=t.target,d=x.dataset;
  const mark=()=>{dirty=true;$('#sv').disabled=false;$('#ebt').textContent='編集モード　●未保存'};
- if(x.id=='q')f.q=x.value;
+ if(x.id=='kq'){KQ=x.value;KL=80;$('#kl').innerHTML=klist(D.items[KI])}else if(x.id=='q')f.q=x.value;
  else if(d.nt!==undefined){D.notice=x.value;mark()}
  else if(d.pg){D.pages[d.pg]=x.value;mark()}
  else if(d.ti!==undefined){D.title=x.value;mark()}
