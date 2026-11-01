@@ -103,10 +103,8 @@ const C=window.CFG||{},SK='ola.session';
 const GENRES=['ドラマ','映画','ドキュメンタリー','バラエティ','音楽番組','ラジオ','ライブ・配信','円盤・特典','音源'];
 const OWN=['所持','一部所持','未所持','確認中','対象外'];
 const LISTS={
- have1:{n:'所持リスト①',sub:'映像作品',d:'ドラマ・映画・ドキュメンタリー・バラエティ・音楽番組',g:['ドラマ','映画','ドキュメンタリー','バラエティ','音楽番組'],l:'have'},
- have2:{n:'所持リスト②',sub:'ライブ・音声',d:'ライブ・配信、円盤・特典、音源、ラジオ',g:['ライブ・配信','円盤・特典','音源','ラジオ'],l:'have'},
- want:{n:'求めリスト',sub:'探しているもの',d:'探している作品・音源',g:GENRES,l:'want'},
- all:{n:'すべてから探す',sub:'所持リスト全体',d:'',g:GENRES,l:'have'}
+ have:{n:'所持リスト',sub:'すべてのジャンル',d:'',g:GENRES,l:'have'},
+ want:{n:'求めリスト',sub:'探しているもの',d:'探している作品・音源',g:GENRES,l:'want'}
 };
 const DEF={title:'list.ola',notice:'',groups:{},pages:{must:'',terms:''},links:[],items:[]};
 
@@ -156,8 +154,7 @@ function pTop(){
  const n=D.items.filter(i=>i.n.startsWith('【NEW】')).length;
  const menu=[
   ['must','必読','ご利用の前にお読みください',''],
-  ['have1',LISTS.have1.n,LISTS.have1.sub+'｜'+LISTS.have1.d,cnt('have1')+'件'],
-  ['have2',LISTS.have2.n,LISTS.have2.sub+'｜'+LISTS.have2.d,cnt('have2')+'件'],
+  ['have',LISTS.have.n,'ドラマ・映画・バラエティ・ライブ・円盤・音源など　ジャンル別',cnt('have')+'件'],
   ['want',LISTS.want.n,LISTS.want.d,cnt('want')+'件'],
   ['people','出演者から探す',Object.keys(D.groups).join('・')+' ほか　メンバー名で絞り込み',''],
   ['guide','見かた','このサイトの使い方',''],
@@ -176,7 +173,7 @@ function pLink(){
   :D.links.length?D.links.filter(x=>/^https?:\/\//i.test(x.u)).map(x=>`<a class="lk" href="${e(x.u)}" target="_blank" rel="noopener noreferrer"><b>${e(x.t||x.u)}</b>${x.d?`<small>${e(x.d)}</small>`:''}</a>`).join(''):'<p class="empty">まだ登録がありません</p>')}
 
 function pGuide(){return head('見かた','')+`<ol class="guide">
-<li><b>トップから選ぶ</b>「所持リスト①②」「求めリスト」を開きます。①は映像作品、②はライブ・円盤・音源・ラジオです。</li>
+<li><b>トップから選ぶ</b>「所持リスト」または「求めリスト」を開きます。</li>
 <li><b>ジャンルで切り替え</b>リスト上部のタブ（横にスワイプできます）でジャンルを選びます。</li>
 <li><b>タイトルをタップ</b>備考や収録内容、出演者のメンバー名が開きます。</li>
 <li><b>出演者のタグをタップ</b>ジャンルをまたいで、その人・グループの一覧が出ます。</li>
@@ -199,7 +196,7 @@ function pList(k){const L=LISTS[k],base=D.items.filter(i=>i.l==L.l&&L.g.includes
  let h='',last='';
  rows.slice(0,lim).forEach(([i,n])=>{if(tab=='すべて'&&L.g.length>1&&i.g!=last){last=i.g;h+=`<h3 class="gh">${e(i.g)}</h3>`}
   h+=`<div class="r" data-i="${n}" role="button" tabindex="0"><div class="gl">${e(i.g)}${i.s?' ・ '+e(i.s):''}</div><div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.l=='have'&&i.o&&i.o!='所持'?`<span class="b">${e(i.o)}</span>`:''}</div>${tags(i)}${i.k.length?`<div class="m">収録 ${i.k.length}件 ›</div>`:''}</div>`});
- return head(L.n,L.sub+(L.d&&k!='all'?'　'+L.d:''))+
+ return head(L.n,L.sub+(L.d?'　'+L.d:''))+
  `<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?base.length:base.filter(i=>i.g==t).length}</i></button>`).join('')}</div>
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
  <p class="hint">${rows.length?rows.length+'件　行をタップで詳細':''}${ed?'　編集モード：行をタップで編集':''}</p>
@@ -262,7 +259,7 @@ function adminMenu(){
 function login(){sheet(`${xbtn()}<h2>管理者ログイン</h2><div class="fg"><label>メールアドレス</label><input id="em" type="email" autocomplete="username" value="${e(em)}"><label>パスワード</label><input id="pw" type="password" autocomplete="current-password"><div class="row"><button class="on" data-a="pw">ログイン</button></div></div>`)}
 
 /* ================= 操作 ================= */
-const goAll=nf=>{f=nf;tab='すべて';lim=60;$('#sh').className='';if(route()=='all'){render();scrollTo(0,0)}else{keepF=true;location.hash='#/all'}};
+const goAll=nf=>{f=nf;tab='すべて';lim=60;$('#sh').className='';if(route()=='have'){render();scrollTo(0,0)}else{keepF=true;location.hash='#/have'}};
 const setF=w=>goAll({q:'',g:[],w:[w],o:[]});
 document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();return}
  const x=t.target.closest('button,span,a,.r')||t.target,d=x.dataset||{};
