@@ -162,7 +162,7 @@ function hitK(i){const q=f.q.toLowerCase().split(/\s+/).filter(Boolean),ws=wsF()
  return h.length?'　<b>該当 '+h.length+'回</b>'+(h.length<=5?'：'+h.map(k=>e(k[1]||k[0])).join('、'):''):''}
 let QW=new Set();
 const perf=i=>{const c={};i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>c[a]=(c[a]||0)+1)});return c};
-const qchips=i=>{const c=perf(i);QW.forEach(a=>c[a]=c[a]||0);return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,60).map(a=>`<button type="button" class="chip ${QW.has(a[0])?'on':''}" data-qw="${e(a[0])}">${e(a[0])}</button>`).join('')};
+const qchips=i=>{const c=perf(i);i.w.forEach(w=>(D.groups[w]||[w]).forEach(a=>{c[a]=c[a]||0}));QW.forEach(a=>c[a]=c[a]||0);return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,60).map(a=>`<button type="button" class="chip ${QW.has(a[0])?'on':''}" data-qw="${e(a[0])}">${e(a[0])}</button>`).join('')};
 function klist(i){const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),r=i.k.filter(k=>{const s=k.join(' ').toLowerCase();return q.every(w=>s.includes(w))});let y='',h='';
  r.slice(0,KL).forEach(k=>{const d=k[1]||k[0],yy=/^\d{4}[-.]/.test(d)?d.slice(0,4):'';if(yy&&yy!=y&&r.length>12){y=yy;h+=`<div class="yh">${yy}</div>`}h+=kh(k)});
  return(q.length?`<p class="hint">${r.length}回</p>`:'')+h+(r.length>KL?`<p><button data-a="kmore">さらに表示（残り${r.length-KL}件）</button></p>`:'')}
@@ -201,7 +201,8 @@ async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
 
 /* ================= 出演者（グループ→メンバー） ================= */
 const grpsOf=m=>Object.keys(D.groups).filter(g=>D.groups[g].includes(m));
-const hitW=(i,w)=>i.w.includes(w)||(D.groups[w]?D.groups[w].some(m=>i.w.includes(m)):grpsOf(w).some(g=>i.w.includes(g)));
+const epW=i=>{const o=[];i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).forEach(a=>{a=a.trim();if(a)o.push(a)})});return o};
+const hitW=(i,w)=>{const t=i.w.concat(epW(i));return t.includes(w)||(D.groups[w]?D.groups[w].some(m=>t.includes(m)):grpsOf(w).some(g=>t.includes(g)))};
 const cntW=w=>D.items.filter(i=>i.l=='have'&&hitW(i,w)).length;
 const hay=i=>(i.t+' '+i.w.join(' ')+' '+i.w.filter(w=>D.groups[w]).map(g=>D.groups[g].join(' ')).join(' ')+' '+i.n+' '+i.m+' '+i.q+' '+i.k.map(k=>k.join(' ')).join(' ')).toLowerCase();
 const tags=i=>i.w.map(w=>`<span class="p${D.groups[w]?' g':''}" data-w="${e(w)}">${e(w)}</span>`).join('');
