@@ -326,7 +326,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
- else if(d.a=='pw'){em=$('#em').value.trim();x.disabled=true;x.textContent='確認中…';try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else alert('メールアドレスかパスワードが違います')}catch(z){alert('通信に失敗しました')}if(x.isConnected){x.disabled=false;x.textContent='ログイン'}}
+ else if(d.a=='pw'){em=$('#em').value.trim();x.disabled=true;x.textContent='確認中…';try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else{let m='';try{const j=await r.json();m=j.error_description||j.msg||j.message||j.error||''}catch(z){}alert('ログインできません（'+r.status+'）'+(m?'\n'+m:''))}}catch(z){alert('通信に失敗しました')}if(x.isConnected){x.disabled=false;x.textContent='ログイン'}}
  else if(d.a=='lo'){out();closeSheet();render()}
  else if(d.a=='bk'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='data-'+new Date().toISOString().slice(0,10)+'.json';a.click()}
  else if(d.a=='add'){const L=LISTS[route()];D.items.unshift({t:'新規',g:tab!='すべて'?tab:L.g[0],s:'',w:[],n:'',o:'',m:'',q:'',r:'',y:'',k:[],l:L.l});dirty=true;form(0)}
