@@ -88,7 +88,8 @@ footer a{margin-right:14px}
 .ro{border:1px solid var(--ln);padding:8px 12px;margin:10px 0;font-size:13px}.ro b{margin-right:8px}
 .fg label{display:block;font-size:12px;color:var(--mu);margin-top:12px}.fg input,.fg select,.fg textarea{width:100%}.fg textarea{min-height:130px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-.lkrow{border:1px solid var(--ln);padding:10px;margin:0 0 10px}.lkrow input{width:100%;margin-bottom:6px}
+.lkrow{border:1px solid var(--ln);padding:10px;margin:0 0 10px;overflow:hidden}.lkrow input{width:100%;margin-bottom:6px}
+input[type=date]{display:block;width:100%;min-width:0;max-width:100%;min-height:36px;-webkit-appearance:none;appearance:none;text-align:left}
 .ld{display:flex;align-items:center;justify-content:center;gap:12px;padding:90px 0;color:var(--mu);font-size:13px;letter-spacing:.08em}
 .ld i{width:18px;height:18px;border:2px solid var(--ln);border-top-color:var(--fg);border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -129,7 +130,8 @@ let D,S=null,ed=false,dirty=false,lim=60,em='',keepF=false,LK='',AT=0,ver=0,savi
 let f={q:'',g:[],w:[],o:[]},tab='すべて';
 const $=s=>document.querySelector(s);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const VW=new URLSearchParams(location.search).get('v')=='have';if(VW)document.documentElement.classList.add('vw');
+const SHARES={kj:'とれたて関ジュース'},SV=new URLSearchParams(location.search).get('v'),SHK=Object.prototype.hasOwnProperty.call(SHARES,SV)?SHARES[SV]:'';
+const VW=SV=='have'||!!SHK;if(VW)document.documentElement.classList.add('vw');if(SHK){LISTS.have.n=SHK;LISTS.have.sub='所持リスト'}
 const route=()=>VW?'have':location.hash.replace(/^#\/?/,'').split('?')[0];
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2200)};
 const linkify=s=>e(s).replace(/https?:\/\/[^\s<>"']+/g,u=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
@@ -160,6 +162,7 @@ const en=k=>{const q=(k[0]||'').match(/\d+/);return q?+q[0]:1e9};
 const kcmp=(x,y)=>{const a=x[1]||'~',b=y[1]||'~';return a==b?en(x)-en(y):a.localeCompare(b)};
 const mk=()=>touch();
 function shareL(){copy(location.href.split('#')[0].split('?')[0]+'?v=have#/have')}
+function shareK(){copy(location.href.split('#')[0].split('?')[0]+'?v=kj#/have')}
 let KQ='',KL=80,KI=0;
 const wsF=()=>f.w.flatMap(w=>D.groups[w]||[w]).map(a=>a.toLowerCase());
 function hitK(i){const q=f.q.toLowerCase().split(/\s+/).filter(Boolean),ws=wsF();if(!q.length&&!ws.length)return'';
@@ -201,7 +204,7 @@ async function saveDB2(auto){const say=m=>auto?toast(m):alert(m);
 
 /* ================= データ ================= */
 function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};d.links=x.links||[];
- d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(!OWN.includes(i.o))i.o='';if(VW){i.r='';i.c=''}return i});return d}
+ d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(!OWN.includes(i.o))i.o='';if(VW){i.r='';i.c=''}return i});if(SHK)d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));return d}
 async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
  let raw=null;
  if(C.url){try{const j=await(await sb('/rest/v1/archive?id=eq.1&select=data')).json();if(j&&j[0])raw=j[0].data}catch(x){}}
@@ -232,7 +235,6 @@ function pTop(){
   ['fav','お気に入り','ログイン不要・この端末に保存',cnt('fav')+'件'],
   ['people','出演者から探す',Object.keys(D.groups).join('・')+' ほか　メンバー名で絞り込み',''],
   ['guide','見かた','このサイトの使い方',''],
-  ['link','LINK','リンク集',''],
   ['terms','免責事項','',''] ];
  return `${ed?`<div class="fg"><label>お知らせ（空にすると非表示）</label><textarea data-nt style="min-height:80px;margin-bottom:20px">${e(D.notice)}</textarea></div>`:D.notice?`<div class="box"><b>お知らせ</b>${e(D.notice)}</div>`:''}
  <form class="sq" id="tq"><input id="tqi" placeholder="タイトル・出演者・メンバー名で検索" aria-label="検索"><button>検索</button></form>
@@ -241,10 +243,6 @@ function pTop(){
 function pText(k,h,sub){const v=D.pages[k]||'';
  return head(h,sub)+(ed?`<div class="fg"><textarea data-pg="${k}" style="min-height:300px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。変更したら上の「保存」で反映されます。</p>`
   :v.trim()?`<div class="pg">${linkify(v)}</div>`:`<p class="empty">まだ書かれていません</p>`)}
-
-function pLink(){
- return head('LINK','')+(ed?`${D.links.map((x,n)=>`<div class="lkrow"><input data-lk="${n}|t" placeholder="名前" value="${e(x.t)}"><input data-lk="${n}|u" placeholder="https://..." value="${e(x.u)}"><input data-lk="${n}|d" placeholder="ひとこと（任意）" value="${e(x.d||'')}"><button data-a="lkdel" data-n="${n}">削除</button></div>`).join('')}<button data-a="lkadd">＋リンクを追加</button>`
-  :D.links.length?D.links.filter(x=>/^https?:\/\//i.test(x.u)).map(x=>`<a class="lk" href="${e(x.u)}" target="_blank" rel="noopener noreferrer"><b>${e(x.t||x.u)}</b>${x.d?`<small>${e(x.d)}</small>`:''}</a>`).join(''):'<p class="empty">まだ登録がありません</p>')}
 
 function pGuide(){return head('見かた','')+`<ol class="guide">
 <li><b>トップから選ぶ</b>「所持リスト」または「求めリスト」を開きます。</li>
@@ -290,10 +288,10 @@ function render(){if(!D)return;const r=route();
  $('#eb').hidden=!ed;if(ed){stTxt();$('#sv').disabled=!dirty||saving}
  let h;
  if(r=='')h=pTop();else if(r=='must')h=pText('must','必読','');else if(r=='terms')h=pText('terms','免責事項','');
- else if(r=='link')h=pLink();else if(r=='guide')h=pGuide();else if(r=='people')h=pPeople();else if(isList)h=pList(r);
+ else if(r=='guide')h=pGuide();else if(r=='people')h=pPeople();else if(isList)h=pList(r);
  else h=head('ページが見つかりません','');
  const sl=($('.tabs')||0).scrollLeft||0;$('#app').innerHTML=h;const t2=$('.tabs');if(t2)t2.scrollLeft=sl;
- $('#ft').innerHTML=`<a href="#/must">必読</a><a href="#/link">LINK</a><a href="#/terms">免責事項</a><button class="ghost" data-a="ins" style="padding:0;min-height:0;font:inherit;color:inherit;text-decoration:underline">ホーム画面に追加</button>`}
+ $('#ft').innerHTML=`<a href="#/must">必読</a><a href="#/terms">免責事項</a><button class="ghost" data-a="ins" style="padding:0;min-height:0;font:inherit;color:inherit;text-decoration:underline">ホーム画面に追加</button>`}
 function onRoute(){rt();$('#sh').className='';if(keepF)keepF=false;else{f={q:'',g:[],w:[],o:[]};tab='すべて'}lim=60;render();scrollTo(0,0)}
 addEventListener('hashchange',onRoute);
 addEventListener('beforeunload',t=>{if(dirty){t.preventDefault();t.returnValue=''}});
@@ -331,10 +329,10 @@ function form(n){anchor(n);const i=D.items[n];
  <label>交換比率（例：1:1／2:1）</label><input data-e="r" value="${e(i.r)}">
  <label>有償時の値段（例：500円／1,000円）</label><input data-e="c" value="${e(i.c)}">
  <h4 style="margin-top:22px">収録内容 ${i.k.length}件</h4>
- <div class="lkrow"><label>話数・回（例：第3話／#3／第3夜）</label><input id="qe">
+ <div class="lkrow"><label>見出し（任意：本編／特典映像など。同じ見出しの回がまとまります）</label><div>${kchips(i)}</div><input id="qs" value="${e(LK)}">
+ <label>話数・回（例：第3話／#3／第3夜）</label><input id="qe">
  <label>サブタイトル・内容（特典名・曲名など）</label><input id="qt">
  <label>日付（任意：放送回や公演日）</label><input type="date" id="qd">
- <label>見出し（任意：本編／特典映像など。同じ見出しの回がまとまります）</label><div>${kchips(i)}</div><input id="qs" value="${e(LK)}">
  <label>出演者（任意・タップで選択）</label><div>${qchips(i)}</div><input id="qx" placeholder="名前を追加（カンマ区切り）" style="margin-top:6px">
  <label>備考（任意）</label><input id="qn">
  <div class="row"><button class="on" data-a="qadd">この回を追加</button></div></div>
@@ -353,7 +351,7 @@ function filt(){const L=LISTS[route()];if(!L)return;
  ${L.l=='have'?`<h4>配布</h4><div>${OWN.map(o=>ch('o',o)).join('')}</div>`:`<h4>求め度</h4><div>${WANT.map(o=>ch('o',o)).join('')}</div>`}
  <div class="row"><button data-a="rs">リセット</button><button class="on" data-a="cl">結果を見る</button></div>`)}
 function adminMenu(){
- sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
+ sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
  <label>グループとメンバー（1行に1グループ　「グループ名：メンバー,メンバー」）</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div>
  <div class="row"><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・LINK・免責事項・お知らせを直接編集できます。</p>'}`}`)}
@@ -378,7 +376,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.pick!==undefined){const i=D.items[+$('#pn').dataset.n],j=i.w.indexOf(d.pick);j<0?i.w.push(d.pick):i.w.splice(j,1);x.classList.toggle('on');$('#wi').value=i.w.join(',');touch()}
  else if(d.a=='cl')closeSheet();
  else if(d.a=='kf')$('#kf').click();
- else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),(ws.length?'出演者: '+ws.join(', '):'')+(nt?(ws.length?' / ':'')+nt:'')]]);LK=ss;mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='ins')inst();
+ else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),(ws.length?'出演者: '+ws.join(', '):'')+(nt?(ws.length?' / ':'')+nt:'')]]);LK=ss;mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){if(ed&&dirty){await saveDB(true);if(dirty){toast('保存できていないため、編集モードを終了できません');return}}ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
