@@ -249,7 +249,7 @@ const DEF={title:'list.ola',notice:'',groups:{},pages:{must:'',terms:''},links:[
 
 /* ================= 状態 ================= */
 let D,S=null,ed=false,dirty=false,lim=60,em='',keepF=false,LK='',SS='have',PG='',PQ='',AT=0,ver=0,saving=false,SY=0,AN=null,NA=null;
-let f={q:'',g:[],w:[],o:[]},tab='すべて',VIS=[],OS=new Set([1]);
+let f={q:'',g:[],w:[],o:[]},tab='すべて',VIS=[],OS=new Set();
 const $=s=>document.querySelector(s);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SHARES={kj:'とれたて関ジュース'},SV=new URLSearchParams(location.search).get('v'),SHK=Object.prototype.hasOwnProperty.call(SHARES,SV)?SHARES[SV]:'';
@@ -494,7 +494,7 @@ async function toggleEd(){if(ed&&dirty){await saveDB(true);if(dirty){toast('保�
 function form(n){anchor(n);const i=D.items[n];
  const cp=m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`,
  pal=Object.entries(D.groups).filter(([g,ms])=>ms.length).map(([g,ms])=>`<div class="hint" style="margin:10px 0 4px">${e(g)}</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}${ms.length?'（全員）':'（グループ名義）'}</button>${ms.map(cp).join('')}`).join('')+`<div class="hint" style="margin:10px 0 4px">STARTO（個人・メンバー未登録のグループ）</div><div>${stl().map(cp).join('')||'<span class="hint">まだいません</span>'}</div>`;
- sheet(`<div class="fg"><div class="stk">${nvr(n)}<div class="row jmp">${['プレビュー','基本','出演者','配布','リンク','収録'].map((t,x)=>`<button data-a="jmp" data-s="${x}">${t}</button>`).join('')}<button data-a="sall" data-o="0">全部たたむ</button><button data-a="sall" data-o="1">全部ひらく</button></div></div><details class="mt sec" open><summary>プレビュー</summary><div class="in"><div class="lp" id="lp">${lpH(i,n)}</div><p class="row" style="margin:6px 0"><button data-a="pv" data-n="${n}">詳細の見え方を確認</button></p></div></details>
+ sheet(`<div class="fg"><div class="stk">${nvr(n)}</div><div class="mt" style="border:1px solid var(--ln);margin:10px 0"><div class="in" style="padding:10px 14px 14px"><div class="lp" id="lp">${lpH(i,n)}</div><p class="row" style="margin:6px 0"><button data-a="pv" data-n="${n}">詳細の見え方を確認</button></p></div></div>
  <details class="mt sec" open><summary><span>基本情報</span><small class="ss" data-ss="1">${e(secSum(i)[1])}</small></summary><div class="in"><label>リスト</label><div class="sgr">${sgb('l','have',i.l,'所持リスト')}${sgb('l','want',i.l,'求めリスト')}</div>
  <label>タイトル</label><input data-e="t" value="${e(i.t)}">
  <label>よみ（並び順用・ひらがな。空でもOK）</label><input data-e="yo" value="${e(i.yo||'')}">
@@ -590,14 +590,14 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='pw'){em=$('#em').value.trim();x.disabled=true;x.textContent='確認中…';try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else{let m='';try{const j=await r.json();m=j.error_description||j.msg||j.message||j.error||''}catch(z){}alert('ログインできません（'+r.status+'）'+(m?'\n'+m:''))}}catch(z){alert('通信に失敗しました')}if(x.isConnected){x.disabled=false;x.textContent='ログイン'}}
  else if(d.a=='lo'){out();closeSheet();render()}
  else if(d.a=='bk'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='data-'+new Date().toISOString().slice(0,10)+'.json';a.click()}
- else if(d.a=='add'){const L=LISTS[route()];D.items.unshift({t:'新規',g:tab!='すべて'?tab:L.g[0],s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:L.l,dl:[]});VIS=[];OS.add(1);touch();form(0);AN=null;setTimeout(()=>{const t=$('#pn [data-e="t"]');if(t){t.focus();t.select()}},60)}
+ else if(d.a=='add'){const L=LISTS[route()];D.items.unshift({t:'新規',g:tab!='すべて'?tab:L.g[0],s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:L.l,dl:[]});VIS=[];OS.add(0);touch();form(0);AN=null;setTimeout(()=>{const t=$('#pn [data-e="t"]');if(t){t.focus();t.select()}},60)}
  else if(d.a=='del'){if(confirm('削除しますか？')){D.items.splice(+d.n,1);touch();AN=null;closeSheet()}}
  else if(d.a=='all'){x.parentNode.outerHTML=D.items[+d.n].k.slice(80).map(k=>kh(k)).join('')}
  else if(d.a=='dladd'){const n=+$('#pn').dataset.n,i=D.items[n];(i.dl=i.dl||[]).push({t:d.p||'',u:''});touch();const st=$('#pn').scrollTop;form(n);const pn=$('#pn');pn.scrollTop=st;const us=pn.querySelectorAll('input[data-dl$="|u"]'),lu=us[us.length-1];if(lu){lu.scrollIntoView({block:'center'});lu.focus()}}
  else if(d.a=='dldel'){const n=+$('#pn').dataset.n,i=D.items[n],st=$('#pn').scrollTop;i.dl.splice(+d.j,1);touch();form(n);$('#pn').scrollTop=st}
  else if(d.sg!==undefined){const n=+$('#pn').dataset.n,i=D.items[n],q=d.sg.indexOf('|'),k=d.sg.slice(0,q),v=d.sg.slice(q+1),req=k=='g'||k=='l';i[k]=(!req&&i[k]==v)?'':v;x.parentNode.querySelectorAll('[data-sg]').forEach(c=>c.classList.toggle('on',c.dataset.sg==k+'|'+i[k]));touch();const lp=$('#lp');if(lp)lp.innerHTML=lpH(i,n);ssUp(i)}
  else if(d.a=='nv'){const n=+$('#pn').dataset.n,p=VIS.indexOf(n),q=VIS[p+ +d.d];if(p>=0&&q!==undefined){form(q);$('#pn').scrollTop=0}}
- else if(d.a=='dup'){const src=D.items[+d.n],c=JSON.parse(JSON.stringify(src));c.t=src.t+'（コピー）';D.items.unshift(c);VIS=[];OS.add(1);touch();AN=null;form(0);toast('複製しました');setTimeout(()=>{const t=$('#pn [data-e="t"]');if(t){t.focus();t.select()}},60)}
+ else if(d.a=='dup'){const src=D.items[+d.n],c=JSON.parse(JSON.stringify(src));c.t=src.t+'（コピー）';D.items.unshift(c);VIS=[];OS.add(0);touch();AN=null;form(0);toast('複製しました');setTimeout(()=>{const t=$('#pn [data-e="t"]');if(t){t.focus();t.select()}},60)}
  else if(d.a=='qpaste'){const n=+$('#pn').dataset.n,i=D.items[n],a=parseK($('#qp').value);if(!a.length)toast('内容を入れてください');else{mergeK(i,a);KO=true;mk();rf(n);toast(a.length+'件追加しました')}}
  else{const r=t.target.closest('.r');if(r)detail(+r.dataset.i)}});
 document.addEventListener('submit',t=>{if(t.target.id=='tq'){t.preventDefault();goAll({q:$('#tqi').value.trim(),g:[],w:[],o:[]})}});
