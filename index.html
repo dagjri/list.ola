@@ -224,15 +224,16 @@ body.tp footer.in{padding-bottom:24px}
 #pn .nvr button{min-height:34px;padding:2px 12px;font-size:13px}
 #pn .sgr{display:flex;flex-wrap:wrap}
 .bar nav>#be.on{background:var(--fg);color:var(--bg)}
-/* ===== 必読：トグル ===== */
-.tg{border:1px solid var(--bd);margin:0 0 8px;background:var(--bg)}
-.tg>summary{padding:12px 14px;font-weight:700;font-size:15px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+/* ===== 必読：トグル（枠なし） ===== */
+.tg{border:0;margin:0;background:none}
+.tg>summary{padding:10px 2px;font-weight:700;font-size:15px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px}
 .tg>summary::-webkit-details-marker{display:none}
-.tg>summary:after{content:"＋";color:var(--mu);font-weight:400;flex:none}
-.tg[open]>summary:after{content:"－"}
-.tg[open]>summary{border-bottom:1px solid var(--ln)}
-.tgb{padding:12px 14px 14px}
-.tgb .tg{background:var(--soft);margin:10px 0 0}
+.tg>summary:before{content:"＋";color:var(--mu);font-weight:400;flex:none;width:1.2em;text-align:center}
+.tg[open]>summary:before{content:"－"}
+.tgb{padding:2px 2px 12px 2.2em}
+.tgb .tg{background:none;margin:0}
+.tgb .tg>summary{font-size:14px}
+.tgb .pg{margin:0 0 8px}
 </style>
 </head>
 <body>
