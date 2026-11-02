@@ -347,9 +347,8 @@ function ppHtml(){const ch=(v,t)=>`<button type="button" class="chip ${f.w.inclu
  const sel=f.w.length?`<div class="ch" style="margin:0 0 8px">${f.w.map(w=>`<span data-t="w|${e(w)}">${e(w)} ✕</span>`).join('')}</div>`:'';
  if(PQ.trim()){const q=PQ.trim().toLowerCase(),names=[...new Set([...gs,...inG,...solo])].filter(n=>n.toLowerCase().includes(q)).sort((a,b)=>cntW(b)-cntW(a)).slice(0,60);
   return sel+(names.length?names.map(n=>ch(n)).join(''):'<p class="hint">見つかりません</p>')}
- const tabs=[...gs,...(solo.length?['個人']:[])];if(!tabs.includes(PG))PG=(f.w.length&&gs.find(g=>f.w.some(w=>w==g||D.groups[g].includes(w))))||tabs[0]||'';
- const body=PG=='個人'?solo.map(n=>ch(n)).join(''):D.groups[PG]?ch(PG,PG+'（全員）')+D.groups[PG].map(m=>ch(m)).join(''):'';
- return sel+(tabs.length?`<div class="gtabs">${tabs.map(t=>`<button type="button" class="${t==PG?'on':''}" data-gt="${e(t)}">${e(t)}</button>`).join('')}</div>`:'')+`<div>${body}</div>`}
+ const hd=t=>`<div class="hint" style="margin:12px 0 4px;font-weight:700">${e(t)}</div>`;
+ return sel+gs.map(g=>hd(g)+`<div>${ch(g,g+'（全員）')+D.groups[g].map(m=>ch(m)).join('')}</div>`).join('')+(solo.length?`<div style="margin-top:12px">${solo.map(n=>ch(n)).join('')}</div>`:'')}
 
 function pText(k,h,sub){const v=D.pages[k]||'';
  return head(h,sub)+(ed?`<div class="fg"><textarea data-pg="${k}" style="min-height:300px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。変更したら上の「保存」で反映されます。</p>`
