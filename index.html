@@ -183,6 +183,13 @@ body.tp footer.in{padding-bottom:24px}
 #pn.fx .fsc{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
 #pn.fx .fbar{position:static;flex:none;margin-top:0;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
 
+#pn details.mt{border:1px solid var(--ln);background:var(--bg);margin:10px 0}
+#pn details.mt>summary{padding:12px 14px;font-weight:700;font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+#pn details.mt>summary::-webkit-details-marker{display:none}
+#pn details.mt>summary:after{content:"＋";color:var(--mu);font-weight:400}
+#pn details.mt[open]>summary:after{content:"－"}
+#pn details.mt[open]>summary{border-bottom:1px solid var(--ln)}
+#pn details.mt>.in{padding:2px 14px 14px}
 /* ===== 見かた：スワイプ式 ===== */
 .gsl{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:10px 0 0}
 .gsl::-webkit-scrollbar{display:none}
@@ -318,7 +325,7 @@ const nn=a=>(Array.isArray(a)?a:[]).map(n=>({id:n.id||nid(),t:n.t||'',b:n.b||'',
 function fnd(id,a=D.notes,p=null){for(const n of a){if(n.id==id)return{n,p,a};const r=fnd(id,n.c,n);if(r)return r}return null}
 
 /* ================= データ ================= */
-function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};['KAMIGATABOYZ','Lilかんさい','SnowMan','SexyZone','関西Jr.','合同'].forEach(g=>{if(!d.groups[g])d.groups[g]=[]});d.links=x.links||[];d.notes=nn(x.notes);
+function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};d.solo=Array.isArray(x.solo)?x.solo.filter(a=>a&&typeof a=='string'):[];['KAMIGATABOYZ','Lilかんさい','SnowMan','SexyZone','関西Jr.','合同'].forEach(g=>{if(!d.groups[g])d.groups[g]=[]});d.links=x.links||[];d.notes=nn(x.notes);
  d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(i.g=='円盤・特典')i.g='シングル・アルバム特典';if(!OWN.includes(i.o))i.o='';if(!EXO.includes(i.ex))i.ex='';if(VW){i.r='';i.c='';i.o='';i.m=''}i.dl=Array.isArray(i.dl)?i.dl.map(l=>({t:l.t||'',u:l.u||''})):[];return i});if(SHK){d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));LISTS.have.g=GENRES.filter(g=>d.items.some(i=>i.g==g))}return d}
 async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
  let raw=null;
@@ -364,7 +371,7 @@ const linkU=u=>{u=String(u||'').trim();if(/^https?:\/\//i.test(u))return u;if(/^
 const dlH=(i,show)=>{const a=(i.dl||[]).map(l=>({t:l.t,u:linkU(l.u)})).filter(l=>l.u);
  return show&&a.length?`<div class="dlb" style="margin:10px 0">${a.map(l=>`<a class="dlk" href="${e(l.u)}" target="_blank" rel="noopener noreferrer"><b>${e(l.t||'リンク')}</b><span aria-hidden="true">↗</span></a>`).join('')}</div>`:''};
 function ppHtml(){const ch=(v,t)=>`<button type="button" class="chip ${f.w.includes(v)?'on':''}" data-t="w|${e(v)}">${e(t||v)}<i>${cntW(v)}</i></button>`;
- const gs=Object.keys(D.groups),inG=new Set(gs.flatMap(g=>D.groups[g])),solo=[...new Set(D.items.flatMap(i=>i.w.concat(epW(i))))].filter(w=>!D.groups[w]&&!inG.has(w)).sort((a,b)=>cntW(b)-cntW(a));
+ const gs=Object.keys(D.groups),inG=new Set(gs.flatMap(g=>D.groups[g])),solo=soloList();
  const sel=f.w.length?`<div class="ch" style="margin:0 0 8px">${f.w.map(w=>`<span data-t="w|${e(w)}">${e(w)} ✕</span>`).join('')}</div>`:'';
  if(PQ.trim()){const q=PQ.trim().toLowerCase(),names=[...new Set([...gs,...inG,...solo])].filter(n=>n.toLowerCase().includes(q)).sort((a,b)=>cntW(b)-cntW(a)).slice(0,60);
   return sel+(names.length?names.map(n=>ch(n)).join(''):'<p class="hint">見つかりません</p>')}
@@ -459,17 +466,18 @@ function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.le
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
  sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function form(n){anchor(n);const i=D.items[n];
- const pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:8px 0 2px">${e(g)}（グループ名義）</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}${ms.length?'全員':''}</button>${ms.map(m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`).join('')}`).join('');
+ const cp=m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`,
+ pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:10px 0 4px">${e(g)}</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}${ms.length?'（全員）':'（グループ名義）'}</button>${ms.map(cp).join('')}`).join('')+`<div class="hint" style="margin:10px 0 4px">STARTO（グループ以外の個人）</div><div>${soloList().map(cp).join('')||'<span class="hint">まだいません</span>'}</div>`;
  sheet(`<div class="fg">${xbtn('完了')}<div class="lp" id="lp">${lpH(i,n)}</div><p class="row" style="margin:6px 0"><button data-a="pv" data-n="${n}">詳細の見え方を確認</button></p>
  <div class="fr"><h4>基本情報</h4><label>リスト</label><select data-e="l"><option value="have" ${i.l=='have'?'selected':''}>所持リスト</option><option value="want" ${i.l=='want'?'selected':''}>求めリスト</option></select>
  <label>タイトル</label><input data-e="t" value="${e(i.t)}">
  <label>よみ（並び順用・ひらがな。空でもOK）</label><input data-e="yo" value="${e(i.yo||'')}">
  <label>ジャンル</label><select data-e="g">${GENRES.map(x=>`<option ${x==i.g?'selected':''}>${x}</option>`).join('')}</select>
  
- <label>出演者・グループ（タップで追加／外す）</label><div>${pal}</div>
- <label>すべてのタグ（直接入力もできます・カンマ区切り）</label><input data-e="w" id="wi" value="${e(i.w.join(','))}">
+ 
+ 
  <label>メモ（先頭に【NEW】でNEW表示）</label><input data-e="n" value="${e(i.n)}">
- </div><div class="fr"><h4>配布・交換</h4><label>求め度（求めリストのみ）</label><select data-e="p"><option value="">未設定</option>${WANT.map(x=>`<option ${x==i.p?'selected':''}>${x}</option>`).join('')}</select>
+ </div><div class="fr"><h4>出演者</h4><p class="hint">タップで選択、もう一度タップで外します。グループに入っていない個人は「STARTO」に並びます。</p><div>${pal}</div><label>STARTOの個人名を追加（カンマ区切り）</label><div class="row"><input id="pnn" placeholder="名前" style="flex:1"><button data-a="padd">追加</button></div><details class="mt"><summary>タグを直接入力する</summary><div class="in"><input data-e="w" id="wi" value="${e(i.w.join(','))}"></div></details></div><div class="fr"><h4>配布・交換</h4><label>求め度（求めリストのみ）</label><select data-e="p"><option value="">未設定</option>${WANT.map(x=>`<option ${x==i.p?'selected':''}>${x}</option>`).join('')}</select>
  <label>配布</label><select data-e="o"><option value="">未設定</option>${OWN.map(x=>`<option ${x==i.o?'selected':''}>${x}</option>`).join('')}</select>
  <label>配布方法（例：Googleドライブ／DM／郵送）</label><input data-e="m" value="${e(i.m)}">
  <label>画質（例：1080p／720p／DVD画質／音声のみ）</label><input data-e="q" value="${e(i.q)}">
@@ -479,17 +487,17 @@ function form(n){anchor(n);const i=D.items[n];
  </div><div class="fr"><h4>共有リンク（所持リストの共有ページにだけ表示）</h4>
  ${(i.dl||[]).map((l,j)=>`<div class="lkrow"><label>表示名</label><input data-dl="${j}|t" value="${e(l.t)}"><label>URL</label><input data-dl="${j}|u" value="${e(l.u)}" placeholder="https://" inputmode="url" autocapitalize="off" autocorrect="off"><p class="hint" id="dh${j}" style="margin:2px 0 0">${linkU(l.u)?'この作品の詳細に表示されます':'URLを入れると表示されます'}</p><div class="row" style="margin-top:6px"><button class="dng" data-a="dldel" data-j="${j}">このリンクを削除</button></div></div>`).join('')}
  <div class="row">${['Googleフォト','Googleドライブ','ギガファイル便'].map(p=>`<button data-a="dladd" data-p="${p}">＋${p}</button>`).join('')}<button data-a="dladd" data-p="">＋自由に追加</button></div>
- </div><div class="fr"><h4>収録内容 ${i.k.length}件</h4>
- <div class="lkrow"><label>見出し（任意：本編／特典映像など。同じ見出しの回がまとまります）</label><div>${kchips(i)}</div><input id="qs" value="${e(LK)}">
+ </div><div class="fr"><h4>収録内容 ${i.k.length}件</h4><p class="hint">追加のしかたを①〜③から選んで開きます。登録済みの分は下の一覧で確認・削除できます。</p>
+ <details class="mt" open><summary>① 1回分を追加（ドラマの話数・公演・特典映像など）</summary><div class="in"><label>見出し（任意：本編／特典映像など。同じ見出しの回がまとまります）</label><div>${kchips(i)}</div><input id="qs" value="${e(LK)}">
  <label>話数・回（例：第3話／#3／第3夜）</label><input id="qe">
  <label>サブタイトル・内容（特典名・曲名など）</label><input id="qt">
  <label>日付（任意：放送回や公演日）</label><input type="date" id="qd">
  <label>出演者（任意・タップで選択）</label><div>${qchips(i)}</div><input id="qx" placeholder="名前を追加（カンマ区切り）" style="margin-top:6px">
  <label>画質（任意：この回だけ違う場合　例：1080p／720p／DVD画質）</label><input id="qq"><label>備考（任意）</label><input id="qn">
- <div class="row"><button class="on" data-a="qadd">この回を追加</button></div></div>
-  <div class="lkrow"><label>曲をまとめて追加（音源用：上の「見出し」にシングル／アルバム名を入れ、曲名を1行に1曲ずつ）</label><textarea id="qb" placeholder="1曲目&#10;2曲目&#10;3曲目" style="min-height:96px"></textarea><div class="row"><button class="on" data-a="qbulk">曲を追加</button></div></div>
- <div class="row"><input type="file" id="kf" accept=".md,.txt,.csv" multiple hidden><button data-a="kf">ファイルから追加（.csv/.md/.txt）</button></div>
- <details style="margin-top:12px"><summary class="hint" style="cursor:pointer">全件をテキストで編集・削除（貼り付け可）</summary><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea></details>
+ <div class="row"><button class="on" data-a="qadd">この回を追加</button></div></div></details>
+  <details class="mt"><summary>② 曲をまとめて追加（音源：シングル・アルバムの収録曲）</summary><div class="in"><p class="hint">①の「見出し」にシングル／アルバム名（必要なら「画質」も）を入れてから、曲名を1行に1曲ずつ貼り付けます。</p><label>曲名（1行に1曲）</label><textarea id="qb" placeholder="1曲目&#10;2曲目&#10;3曲目" style="min-height:96px"></textarea><div class="row"><button class="on" data-a="qbulk">曲を追加</button></div></div></details>
+ <details class="mt"><summary>③ ファイルから追加（.csv / .md / .txt）</summary><div class="in"><div class="row"><input type="file" id="kf" accept=".md,.txt,.csv" multiple hidden><button data-a="kf">ファイルを選ぶ</button></div></div></details>
+ <details class="mt" ${KO?'open':''}><summary>登録済みの収録内容（${i.k.length}件）・削除</summary><div class="in" style="max-height:320px;overflow:auto">${klist2(i)}</div></details><details class="mt"><summary>全件をテキストで編集・貼り付け（上級者向け）</summary><div class="in"><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea></div></details>
  </div><div class="row"><button class="dng" data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n}
 function filt(){const L=curL();if(!L)return;PQ='';
  const ws=Object.keys(D.groups),inG=new Set(ws.flatMap(g=>D.groups[g])),rest={};
@@ -506,14 +514,17 @@ function adminMenu(){
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
  <label>グループとメンバー（1行に1グループ　「グループ名：メンバー,メンバー」）</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div>
  <div class="row"><button data-a="pm">出演者・グループ名を編集</button><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・免責事項・お知らせを直接編集できます。</p>'}`}`)}
+const soloList=()=>[...new Set([...D.solo,...D.items.flatMap(i=>i.w.concat(epW(i)))])].filter(w=>!D.groups[w]&&!grpsOf(w).length).sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
+const klist2=i=>i.k.map((k,j)=>`<div class="row" style="margin:4px 0;align-items:center;flex-wrap:nowrap"><span style="flex:1;min-width:0;font-size:13px">${k[2]?`<small class="hint">${e(k[2])}　</small>`:''}${e(k[0])}${k[1]?` <small class="hint">${e(k[1])}</small>`:''}${k[3]?`<br><small class="hint">${e(k[3])}</small>`:''}</span><button class="dng" data-a="kdel" data-j="${j}" aria-label="削除">✕</button></div>`).join('')||'<p class="hint">まだありません</p>';
+let KO=false;
 function renW(o,n){const U=a=>[...new Set(a.map(w=>w==o?n:w).filter(Boolean))];
  D.items.forEach(i=>{i.w=U(i.w);i.k=i.k.map(k=>{if(!k[3]||k[3].indexOf('出演者: ')<0)return k;const ps=k[3].split(' / ').map(p=>{if(!p.startsWith('出演者: '))return p;const a=U(p.slice(5).split(/\s*[,、，]\s*/));return a.length?'出演者: '+a.join(', '):''}).filter(Boolean);return [k[0],k[1],k[2],ps.join(' / '),...k.slice(4)]})});
- const g={};Object.keys(D.groups).forEach(k=>{const nk=k==o?n:k;if(!nk)return;g[nk]=[...new Set([...(g[nk]||[]),...U(D.groups[k])])]});D.groups=g}
-function perfMgr(){const gs=Object.keys(D.groups),ps=new Set(gs.flatMap(g=>D.groups[g]));D.items.forEach(i=>i.w.concat(epW(i)).forEach(w=>{if(!D.groups[w])ps.add(w)}));
+ const g={};Object.keys(D.groups).forEach(k=>{const nk=k==o?n:k;if(!nk)return;g[nk]=[...new Set([...(g[nk]||[]),...U(D.groups[k])])]});D.groups=g;D.solo=U(D.solo)}
+function perfMgr(){const gs=Object.keys(D.groups),ps=new Set(gs.flatMap(g=>D.groups[g]));D.items.forEach(i=>i.w.concat(epW(i)).forEach(w=>{if(!D.groups[w])ps.add(w)}));D.solo.forEach(w=>ps.add(w));
  const row=n=>`<div class="row" style="margin:6px 0;align-items:center"><input data-pn="${e(n)}" value="${e(n)}" style="flex:1"><small class="hint" style="white-space:nowrap">${cntW(n)}件</small></div>`;
  sheet(`<div class="fg">${xbtn('閉じる')}<h2>出演者の編集</h2><p class="hint">名前を書き換えると、すべての作品・収録内容・グループに反映されます。空にすると削除、すでにある名前にすると統合されます。</p>
  <div class="fr"><h4>グループ名</h4>${gs.map(row).join('')}<label>グループを追加</label><div class="row"><input id="pnew" placeholder="グループ名" style="flex:1"><button data-a="pmadd">追加</button></div></div>
- <div class="fr"><h4>個人（${ps.size}名）</h4>${[...ps].sort((a,b)=>a.localeCompare(b,'ja')).map(row).join('')}</div>
+ <div class="fr"><h4>個人（${ps.size}名）</h4><label>STARTOの個人を追加</label><div class="row"><input id="pnp" placeholder="名前" style="flex:1"><button data-a="pmaddp">追加</button></div>${[...ps].sort((a,b)=>a.localeCompare(b,'ja')).map(row).join('')}</div>
  <div class="row"><button class="on" data-a="pmsave" style="flex:1">変更を反映</button></div></div>`)}
 function login(){sheet(`${xbtn()}<h2>管理者ログイン</h2><div class="fg"><label>メールアドレス</label><input id="em" type="email" autocomplete="username" value="${e(em)}"><label>パスワード</label><input id="pw" type="password" autocomplete="current-password"><div class="row"><button class="on" data-a="pw">ログイン</button></div></div>`)}
 
@@ -542,7 +553,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='cl')closeSheet();
  else if(d.a=='pv')dview(+d.n,`<p style="text-align:right;margin:0"><button data-a="pvb" data-n="${d.n}">← 編集に戻る</button></p>`);else if(d.a=='pvb')form(+d.n);
  else if(d.a=='kf')$('#kf').click();
- else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),[ws.length?'出演者: '+ws.join(', '):'',$('#qq').value.trim()?'画質: '+$('#qq').value.trim():'',nt].filter(Boolean).join(' / ')]]);LK=ss;mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='pm'){perfMgr()}else if(d.a=='pmadd'){const v=$('#pnew').value.trim();if(!v)toast('グループ名を入れてください');else if(D.groups[v])toast('すでにあります');else{D.groups[v]=[];mark();render();perfMgr();toast(v+' を追加しました')}}else if(d.a=='pmsave'){const c=[...document.querySelectorAll('#pn [data-pn]')].filter(x=>x.value.trim()!==x.dataset.pn);if(!c.length)toast('変更はありません');else if(confirm(c.length+'件の名前を変更・削除します。よろしいですか？')){c.forEach(x=>renW(x.dataset.pn,x.value.trim()));mark();render();perfMgr();toast('反映しました')}}else if(d.a=='qbulk'){const n=+$('#pn').dataset.n,i=D.items[n],ss=$('#qs').value.trim(),qq=$('#qq').value.trim(),ls=$('#qb').value.split('\n').map(a=>a.trim().replace(/^\d+[.．、)）]\s*/,'')).filter(Boolean);if(!ss)toast('見出し（シングル・アルバム名）を入れてください');else if(!ls.length)toast('曲名を入れてください');else{mergeK(i,ls.map(t=>[t,'',ss,qq?'画質: '+qq:'']));LK=ss;mk();form(n);toast(ss+' に '+ls.length+'曲を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
+ else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),[ws.length?'出演者: '+ws.join(', '):'',$('#qq').value.trim()?'画質: '+$('#qq').value.trim():'',nt].filter(Boolean).join(' / ')]]);LK=ss;mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='padd'){const n=+$('#pn').dataset.n,i=D.items[n],v=$('#pnn').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a);if(!i.w.includes(a))i.w.push(a)});touch();form(n);toast(v.join('、')+' を追加しました')}}else if(d.a=='kdel'){const n=+$('#pn').dataset.n;D.items[n].k.splice(+d.j,1);KO=true;mk();form(n)}else if(d.a=='pmaddp'){const v=$('#pnp').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a)});mark();render();perfMgr();toast('追加しました')}}else if(d.a=='pm'){perfMgr()}else if(d.a=='pmadd'){const v=$('#pnew').value.trim();if(!v)toast('グループ名を入れてください');else if(D.groups[v])toast('すでにあります');else{D.groups[v]=[];mark();render();perfMgr();toast(v+' を追加しました')}}else if(d.a=='pmsave'){const c=[...document.querySelectorAll('#pn [data-pn]')].filter(x=>x.value.trim()!==x.dataset.pn);if(!c.length)toast('変更はありません');else if(confirm(c.length+'件の名前を変更・削除します。よろしいですか？')){c.forEach(x=>renW(x.dataset.pn,x.value.trim()));mark();render();perfMgr();toast('反映しました')}}else if(d.a=='qbulk'){const n=+$('#pn').dataset.n,i=D.items[n],ss=$('#qs').value.trim(),qq=$('#qq').value.trim(),ls=$('#qb').value.split('\n').map(a=>a.trim().replace(/^\d+[.．、)）]\s*/,'')).filter(Boolean);if(!ss)toast('見出し（シングル・アルバム名）を入れてください');else if(!ls.length)toast('曲名を入れてください');else{mergeK(i,ls.map(t=>[t,'',ss,qq?'画質: '+qq:'']));LK=ss;mk();form(n);toast(ss+' に '+ls.length+'曲を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){if(ed&&dirty){await saveDB(true);if(dirty){toast('保存できていないため、編集モードを終了できません');return}}ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
