@@ -430,7 +430,7 @@ const kh=(k,g)=>{const d=k[1]||k[0],m=(k[3]||'').split(' / '),w=/^出演者[:：
 function detail(n){anchor(n);if(ed)return form(n);dview(n)}
 function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
- sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2><button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button> ${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
+ sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function form(n){anchor(n);const i=D.items[n];
  const pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:8px 0 2px">${e(g)}（グループ名義）</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}全員</button>${ms.map(m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`).join('')}`).join('');
  sheet(`<div class="fg">${xbtn('完了')}<div class="lp" id="lp">${lpH(i,n)}</div><p class="row" style="margin:6px 0"><button data-a="pv" data-n="${n}">詳細の見え方を確認</button></p>
