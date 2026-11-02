@@ -183,6 +183,13 @@ body.tp footer.in{padding-bottom:24px}
 #pn.fx .fsc{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
 #pn.fx .fbar{position:static;flex:none;margin-top:0;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
 
+/* ===== 見かた：スワイプ式 ===== */
+.gsl{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:10px 0 0}
+.gsl::-webkit-scrollbar{display:none}
+.gsl>section{flex:0 0 100%;scroll-snap-align:center;box-sizing:border-box;padding:8px 16px 4px;text-align:center}
+.gsl svg{width:min(240px,78%);height:auto;color:var(--fg)}
+.gsl h3{margin:10px 0 6px;font-size:17px}.gsl p{margin:0 auto;max-width:30em;font-size:13px;line-height:1.7;color:var(--mu);min-height:5.2em}
+.gdt{display:flex;justify-content:center;gap:8px;margin:8px 0 6px}.gdt i{width:7px;height:7px;border-radius:50%;background:var(--ln);transition:background .2s}.gdt i.on{background:var(--fg)}
 /* ===== 編集画面：固定解除・スタイリッシュ調整 ===== */
 .lp{position:static !important;max-height:none !important;pointer-events:auto;border:1px solid var(--ln);background:var(--soft);padding:10px 14px}
 #pn:not(.fx) .fg{counter-reset:sec}
@@ -311,7 +318,7 @@ const nn=a=>(Array.isArray(a)?a:[]).map(n=>({id:n.id||nid(),t:n.t||'',b:n.b||'',
 function fnd(id,a=D.notes,p=null){for(const n of a){if(n.id==id)return{n,p,a};const r=fnd(id,n.c,n);if(r)return r}return null}
 
 /* ================= データ ================= */
-function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};d.links=x.links||[];d.notes=nn(x.notes);
+function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};['KAMIGATABOYZ','Lilかんさい','SnowMan','SexyZone','関西Jr.','合同'].forEach(g=>{if(!d.groups[g])d.groups[g]=[]});d.links=x.links||[];d.notes=nn(x.notes);
  d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(i.g=='円盤・特典')i.g='シングル・アルバム特典';if(!OWN.includes(i.o))i.o='';if(!EXO.includes(i.ex))i.ex='';if(VW){i.r='';i.c='';i.o='';i.m=''}i.dl=Array.isArray(i.dl)?i.dl.map(l=>({t:l.t||'',u:l.u||''})):[];return i});if(SHK){d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));LISTS.have.g=GENRES.filter(g=>d.items.some(i=>i.g==g))}return d}
 async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
  let raw=null;
@@ -362,28 +369,34 @@ function ppHtml(){const ch=(v,t)=>`<button type="button" class="chip ${f.w.inclu
  if(PQ.trim()){const q=PQ.trim().toLowerCase(),names=[...new Set([...gs,...inG,...solo])].filter(n=>n.toLowerCase().includes(q)).sort((a,b)=>cntW(b)-cntW(a)).slice(0,60);
   return sel+(names.length?names.map(n=>ch(n)).join(''):'<p class="hint">見つかりません</p>')}
  const hd=t=>`<div class="hint" style="margin:12px 0 4px;font-weight:700">${e(t)}</div>`;
- return sel+gs.map(g=>hd(g)+`<div>${ch(g,g+'（全員）')+D.groups[g].map(m=>ch(m)).join('')}</div>`).join('')+(solo.length?hd('STARTO')+`<div>${solo.map(n=>ch(n)).join('')}</div>`:'')}
+ return sel+gs.map(g=>hd(g)+`<div>${ch(g,D.groups[g].length?g+'（全員）':g)+D.groups[g].map(m=>ch(m)).join('')}</div>`).join('')+(solo.length?hd('STARTO')+`<div>${solo.map(n=>ch(n)).join('')}</div>`:'')}
 
 function pText(k,h,sub){const v=D.pages[k]||'';
  return head(h,sub)+(ed?`<div class="fg"><textarea data-pg="${k}" style="min-height:300px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。変更したら上の「保存」で反映されます。</p>`
   :v.trim()?`<div class="pg">${linkify(v)}</div>`:`<p class="empty">まだ書かれていません</p>`)}
 
-function pGuide(){return head('見かた','')+`<ol class="guide">
-<li><b>トップから選ぶ</b>「所持リスト」「求めリスト」「お気に入り」「検索」から開きます。「必読」には、ご利用の前に読んでほしいことをまとめています。</li>
-<li><b>ジャンルで切り替え</b>リスト上部のタブ（横にスワイプできます）でジャンルを選びます。</li>
-<li><b>タイトルをタップ</b>備考や収録内容、出演者のメンバー名が開きます。</li>
-<li><b>出演者のタグをタップ</b>ジャンルをまたいで、その人・グループの一覧が出ます。</li>
-<li><b>メンバー名で探す</b>「検索」または一覧の「検索」→「出演者」で、グループ → メンバーの順に選べます。名前を入れて探すこともできます。グループ名義の項目は、メンバー全員分として含まれます。</li>
-<li><b>検索で絞り込み</b>文字・ジャンル・出演者・配布を組み合わせられます。同じ項目の中は「どれか」、別の項目どうしは「すべて」に当てはまるものが出ます。選んだ条件は一覧の上に出て、タップで外せます。</li>
-<li><b>お気に入り</b>各行の ☆ をタップ。ログイン不要で、この端末のブラウザに保存されます（端末やブラウザを変えると引き継がれません）。</li>
+function pGuide(){const sv=i=>`<svg viewBox="0 0 200 150" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="62" y="4" width="76" height="142" rx="12"/>${i}</svg>`,
+ rw=(y,o)=>`<rect x="70" y="${y}" width="60" height="14" stroke-width="1.5" ${o?'fill="currentColor" fill-opacity=".14"':''}/>`,
+ fg=(x,y)=>`<circle cx="${x}" cy="${y}" r="10" fill="currentColor" fill-opacity=".2" stroke="none"/><circle cx="${x}" cy="${y}" r="3.5" fill="currentColor" stroke="none"/>`,
+ pill=(x,y,w,o)=>`<rect x="${x}" y="${y}" width="${w}" height="11" rx="5.5" stroke-width="1.5" ${o?'fill="currentColor"':''}/>`,
+ ic=[72,92,112].flatMap(x=>[24,48,72,96].map(y=>`<rect x="${x}" y="${y}" width="16" height="16" rx="4.5" stroke-width="1.5" ${x==92&&y==48?'fill="currentColor"':''}/>`)).join('');
+ const S=[
+ ['トップから選ぶ','「所持リスト」「求めリスト」「お気に入り」「検索」から開きます。「必読」には、ご利用の前に読んでほしいことをまとめています。',rw(24)+rw(46,1)+rw(68)+rw(90)+fg(100,53)],
+ ['ジャンルで切り替え','リスト上部のタブを横にスワイプして、ジャンルを選びます。',pill(70,22,18,1)+pill(92,22,18)+pill(114,22,18)+`<path d="M76 46h50M118 40l8 6-8 6" stroke-dasharray="3 4"/>`+fg(96,46)+rw(64)+rw(84)+rw(104)],
+ ['タイトルをタップ','備考や収録内容、出演者のメンバー名が開きます。',rw(24)+rw(44,1)+fg(100,51)+`<rect x="66" y="74" width="68" height="66" rx="8" fill="currentColor" fill-opacity=".08"/><path d="M74 88h40M74 100h52M74 112h46M74 124h30" stroke-width="1.5"/>`],
+ ['出演者のタグをタップ','ジャンルをまたいで、その人・グループの一覧が出ます。',`<path d="M72 26h44" />`+pill(72,40,24)+pill(100,40,24,1)+fg(112,46)+`<path d="M100 62v14M95 70l5 6 5-6" stroke-dasharray="3 4"/>`+rw(84)+rw(104)+rw(124)],
+ ['検索で絞り込み','文字・ジャンル・出演者・配布を組み合わせられます。出演者はグループ → メンバーの順に選べ、名前を入れて探すこともできます。',`<rect x="70" y="22" width="60" height="14" rx="7" stroke-width="1.5"/><circle cx="79" cy="29" r="3" stroke-width="1.5"/>`+pill(70,44,18,1)+pill(92,44,18)+pill(114,44,16,1)+fg(101,50)+rw(70)+rw(90)+rw(110)],
+ ['お気に入り','各行の ☆ をタップ。ログイン不要で、この端末のブラウザに保存されます（端末やブラウザを変えると引き継がれません）。',[28,50,72].map((y,x)=>rw(y)+`<text x="118" y="${y+11}" font-size="11" fill="currentColor" stroke="none">${x==1?'★':'☆'}</text>`).join('')+fg(121,57)],
+ ['ホーム画面に追加','ページ下の「ホーム画面に追加」から、アプリのように起動できます。',ic+fg(100,56)+`<rect x="74" y="122" width="52" height="14" rx="7" stroke-width="1.5"/>`]
+ ];
+ return head('見かた','')+`<div class="gsl">${S.map(x=>`<section>${sv(x[2])}<h3>${x[0]}</h3><p>${x[1]}</p></section>`).join('')}</div><div class="gdt">${S.map((x,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div><p class="hint" style="text-align:center">← スワイプしてめくれます →</p>`}
 
-<li><b>ホーム画面に追加</b>ページ下の「ホーム画面に追加」から、アプリのように起動できます。</li></ol>`}
-
+document.addEventListener('scroll',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('gsl')){const k=Math.round(t.scrollLeft/t.clientWidth);t.nextElementSibling.querySelectorAll('i').forEach((d,x)=>d.classList.toggle('on',x==k))}},true);
 function pPeople(){
  const rest={};D.items.forEach(i=>i.w.forEach(w=>{if(!D.groups[w]&&!grpsOf(w).length)rest[w]=1}));
  const chip=w=>`<button class="chip" data-pw="${e(w)}">${e(w)}<i>${cntW(w)}</i></button>`;
  return head('出演者から探す','名前をタップすると、ジャンルをまたいで所持リストから一覧します')+
- Object.entries(D.groups).map(([g,ms])=>`<section class="ppl"><h3><span>${e(g)}</span><button data-pw="${e(g)}">${ms.length}名すべて　${cntW(g)}件 ›</button></h3><p class="cl">${ms.map(chip).join('')}</p></section>`).join('')+
+ Object.entries(D.groups).filter(([g,ms])=>ms.length||cntW(g)).map(([g,ms])=>`<section class="ppl"><h3><span>${e(g)}</span><button data-pw="${e(g)}">${ms.length?ms.length+'名すべて　':''}${cntW(g)}件 ›</button></h3><p class="cl">${ms.map(chip).join('')}</p></section>`).join('')+
  (Object.keys(rest).length?`<section class="ppl"><p class="cl">${Object.keys(rest).sort((a,b)=>cntW(b)-cntW(a)).map(chip).join('')}</p></section>`:'')+
  `<p class="hint">グループ名義で登録した項目（ライブ・音源など）は、そのグループの全メンバー分として数えます。</p>`}
 
@@ -446,7 +459,7 @@ function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.le
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
  sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function form(n){anchor(n);const i=D.items[n];
- const pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:8px 0 2px">${e(g)}（グループ名義）</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}全員</button>${ms.map(m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`).join('')}`).join('');
+ const pal=Object.entries(D.groups).map(([g,ms])=>`<div class="hint" style="margin:8px 0 2px">${e(g)}（グループ名義）</div><button class="chip ${i.w.includes(g)?'on':''}" data-pick="${e(g)}">${e(g)}${ms.length?'全員':''}</button>${ms.map(m=>`<button class="chip ${i.w.includes(m)?'on':''}" data-pick="${e(m)}">${e(m)}</button>`).join('')}`).join('');
  sheet(`<div class="fg">${xbtn('完了')}<div class="lp" id="lp">${lpH(i,n)}</div><p class="row" style="margin:6px 0"><button data-a="pv" data-n="${n}">詳細の見え方を確認</button></p>
  <div class="fr"><h4>基本情報</h4><label>リスト</label><select data-e="l"><option value="have" ${i.l=='have'?'selected':''}>所持リスト</option><option value="want" ${i.l=='want'?'selected':''}>求めリスト</option></select>
  <label>タイトル</label><input data-e="t" value="${e(i.t)}">
@@ -492,7 +505,16 @@ function adminMenu(){
  sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
  <label>グループとメンバー（1行に1グループ　「グループ名：メンバー,メンバー」）</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div>
- <div class="row"><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・免責事項・お知らせを直接編集できます。</p>'}`}`)}
+ <div class="row"><button data-a="pm">出演者・グループ名を編集</button><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・免責事項・お知らせを直接編集できます。</p>'}`}`)}
+function renW(o,n){const U=a=>[...new Set(a.map(w=>w==o?n:w).filter(Boolean))];
+ D.items.forEach(i=>{i.w=U(i.w);i.k=i.k.map(k=>{if(!k[3]||k[3].indexOf('出演者: ')<0)return k;const ps=k[3].split(' / ').map(p=>{if(!p.startsWith('出演者: '))return p;const a=U(p.slice(5).split(/\s*[,、，]\s*/));return a.length?'出演者: '+a.join(', '):''}).filter(Boolean);return [k[0],k[1],k[2],ps.join(' / '),...k.slice(4)]})});
+ const g={};Object.keys(D.groups).forEach(k=>{const nk=k==o?n:k;if(!nk)return;g[nk]=[...new Set([...(g[nk]||[]),...U(D.groups[k])])]});D.groups=g}
+function perfMgr(){const gs=Object.keys(D.groups),ps=new Set(gs.flatMap(g=>D.groups[g]));D.items.forEach(i=>i.w.concat(epW(i)).forEach(w=>{if(!D.groups[w])ps.add(w)}));
+ const row=n=>`<div class="row" style="margin:6px 0;align-items:center"><input data-pn="${e(n)}" value="${e(n)}" style="flex:1"><small class="hint" style="white-space:nowrap">${cntW(n)}件</small></div>`;
+ sheet(`<div class="fg">${xbtn('閉じる')}<h2>出演者の編集</h2><p class="hint">名前を書き換えると、すべての作品・収録内容・グループに反映されます。空にすると削除、すでにある名前にすると統合されます。</p>
+ <div class="fr"><h4>グループ名</h4>${gs.map(row).join('')}<label>グループを追加</label><div class="row"><input id="pnew" placeholder="グループ名" style="flex:1"><button data-a="pmadd">追加</button></div></div>
+ <div class="fr"><h4>個人（${ps.size}名）</h4>${[...ps].sort((a,b)=>a.localeCompare(b,'ja')).map(row).join('')}</div>
+ <div class="row"><button class="on" data-a="pmsave" style="flex:1">変更を反映</button></div></div>`)}
 function login(){sheet(`${xbtn()}<h2>管理者ログイン</h2><div class="fg"><label>メールアドレス</label><input id="em" type="email" autocomplete="username" value="${e(em)}"><label>パスワード</label><input id="pw" type="password" autocomplete="current-password"><div class="row"><button class="on" data-a="pw">ログイン</button></div></div>`)}
 
 /* ================= 操作 ================= */
@@ -520,7 +542,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='cl')closeSheet();
  else if(d.a=='pv')dview(+d.n,`<p style="text-align:right;margin:0"><button data-a="pvb" data-n="${d.n}">← 編集に戻る</button></p>`);else if(d.a=='pvb')form(+d.n);
  else if(d.a=='kf')$('#kf').click();
- else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),[ws.length?'出演者: '+ws.join(', '):'',$('#qq').value.trim()?'画質: '+$('#qq').value.trim():'',nt].filter(Boolean).join(' / ')]]);LK=ss;mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='qbulk'){const n=+$('#pn').dataset.n,i=D.items[n],ss=$('#qs').value.trim(),qq=$('#qq').value.trim(),ls=$('#qb').value.split('\n').map(a=>a.trim().replace(/^\d+[.．、)）]\s*/,'')).filter(Boolean);if(!ss)toast('見出し（シングル・アルバム名）を入れてください');else if(!ls.length)toast('曲名を入れてください');else{mergeK(i,ls.map(t=>[t,'',ss,qq?'画質: '+qq:'']));LK=ss;mk();form(n);toast(ss+' に '+ls.length+'曲を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
+ else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),[ws.length?'出演者: '+ws.join(', '):'',$('#qq').value.trim()?'画質: '+$('#qq').value.trim():'',nt].filter(Boolean).join(' / ')]]);LK=ss;mk();form(n);toast((tt||dt)+' を追加しました')}}else if(d.a=='pm'){perfMgr()}else if(d.a=='pmadd'){const v=$('#pnew').value.trim();if(!v)toast('グループ名を入れてください');else if(D.groups[v])toast('すでにあります');else{D.groups[v]=[];mark();render();perfMgr();toast(v+' を追加しました')}}else if(d.a=='pmsave'){const c=[...document.querySelectorAll('#pn [data-pn]')].filter(x=>x.value.trim()!==x.dataset.pn);if(!c.length)toast('変更はありません');else if(confirm(c.length+'件の名前を変更・削除します。よろしいですか？')){c.forEach(x=>renW(x.dataset.pn,x.value.trim()));mark();render();perfMgr();toast('反映しました')}}else if(d.a=='qbulk'){const n=+$('#pn').dataset.n,i=D.items[n],ss=$('#qs').value.trim(),qq=$('#qq').value.trim(),ls=$('#qb').value.split('\n').map(a=>a.trim().replace(/^\d+[.．、)）]\s*/,'')).filter(Boolean);if(!ss)toast('見出し（シングル・アルバム名）を入れてください');else if(!ls.length)toast('曲名を入れてください');else{mergeK(i,ls.map(t=>[t,'',ss,qq?'画質: '+qq:'']));LK=ss;mk();form(n);toast(ss+' に '+ls.length+'曲を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed'){if(ed&&dirty){await saveDB(true);if(dirty){toast('保存できていないため、編集モードを終了できません');return}}ed=!ed;adminMenu();render()}
  else if(d.a=='li')login();
