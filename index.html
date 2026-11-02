@@ -224,6 +224,15 @@ body.tp footer.in{padding-bottom:24px}
 #pn .nvr button{min-height:34px;padding:2px 12px;font-size:13px}
 #pn .sgr{display:flex;flex-wrap:wrap}
 .bar nav>#be.on{background:var(--fg);color:var(--bg)}
+/* ===== 必読：トグル ===== */
+.tg{border:1px solid var(--bd);margin:0 0 8px;background:var(--bg)}
+.tg>summary{padding:12px 14px;font-weight:700;font-size:15px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tg>summary::-webkit-details-marker{display:none}
+.tg>summary:after{content:"＋";color:var(--mu);font-weight:400;flex:none}
+.tg[open]>summary:after{content:"－"}
+.tg[open]>summary{border-bottom:1px solid var(--ln)}
+.tgb{padding:12px 14px 14px}
+.tgb .tg{background:var(--soft);margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -370,9 +379,11 @@ function pTop(){
  ${menuH(menu)}`}
 
 const nlist=(arr,pid)=>menuH(arr.map((n,x)=>['#/n/'+n.id,n.t||'（無題）','',n.c.length?n.c.length+'件':'',ed?`<div class="nc"><button data-na="up" data-id="${n.id}" ${x?'':'disabled'}>↑</button><button data-na="dn" data-id="${n.id}" ${x<arr.length-1?'':'disabled'}>↓</button><button data-na="rm" data-id="${n.id}">削除</button></div>`:'']))+(ed?`<p style="margin:0"><button data-na="add" data-id="${pid}">＋ノートを追加</button></p>`:'');
+const ntg=(n,x,arr)=>`<details class="tg" data-id="${n.id}"${NOPEN.has(n.id)?' open':''}><summary><span data-sm="${n.id}">${e(n.t||'（無題）')}</span></summary><div class="tgb">${ed?`<div class="fg"><label>タイトル（例：◎交換について）</label><input data-ntt="${n.id}" value="${e(n.t)}"><label>本文</label><textarea data-nb="${n.id}" style="min-height:140px">${e(n.b)}</textarea></div><p class="hint">URL はそのままリンクになります。</p>`:n.b.trim()?`<div class="pg">${linkify(n.b)}</div>`:''}${n.c.map((c,y)=>ntg(c,y,n.c)).join('')}${ed?`<div class="nc" style="margin-top:10px;flex-wrap:wrap"><button data-na="up" data-id="${n.id}" ${x?'':'disabled'}>↑</button><button data-na="dn" data-id="${n.id}" ${x<arr.length-1?'':'disabled'}>↓</button><button data-na="add" data-id="${n.id}">＋中に追加</button><button data-na="rm" data-id="${n.id}">削除</button></div>`:''}</div></details>`;
 function pMust(){const v=D.pages.must||'';
- return head('必読','')+(ed?`<div class="fg"><label>はじめに（任意）</label><textarea data-pg="must" style="min-height:110px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。下のボタンから、見出しごとのノートを増やせます。</p>`:v.trim()?`<div class="pg" style="margin:0 0 20px">${linkify(v)}</div>`:'')
- +(D.notes.length||ed?nlist(D.notes,''):v.trim()?'':'<p class="empty">まだ書かれていません</p>')}
+ return head('必読','')+(ed?`<div class="fg"><label>はじめに（任意）</label><textarea data-pg="must" style="min-height:110px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。下のボタンから、タップで開閉できる見出し（トグル）を増やせます。</p>`:v.trim()?`<div class="pg" style="margin:0 0 20px">${linkify(v)}</div>`:'')
+  +D.notes.map((n,x)=>ntg(n,x,D.notes)).join('')
+  +(ed?`<p style="margin:10px 0 0"><button data-na="add" data-id="">＋項目を追加</button></p>`:!D.notes.length&&!v.trim()?'<p class="empty">まだ書かれていません</p>':'')}
 function pNote(id){const r=fnd(id);if(!r)return head('ノートが見つかりません','');const n=r.n,pt=r.p;
  return `<a class="back" href="${pt?'#/n/'+pt.id:'#/must'}">← ${e(pt?(pt.t||'戻る'):'必読')}</a><h1>${e(n.t||'（無題）')}</h1>`
  +(ed?`<div class="fg"><label>タイトル（例：◎交換について）</label><input data-ntt="${n.id}" value="${e(n.t)}"><label>本文</label><textarea data-nb="${n.id}" style="min-height:220px">${e(n.b)}</textarea></div><p class="hint">URL はそのままリンクになります。</p>`:n.b.trim()?`<div class="pg" style="margin:8px 0 20px">${linkify(n.b)}</div>`:'')
@@ -480,7 +491,7 @@ function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.le
  const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
  sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px;white-space:pre-wrap">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function secInit(){document.querySelectorAll('#pn details.sec').forEach((d,x)=>{d.dataset.s=x;d.open=OS.has(x)})}
-document.addEventListener('toggle',ev=>{const d=ev.target;if(d.classList&&d.classList.contains('sec')&&d.dataset.s!==undefined){const x=+d.dataset.s;d.open?OS.add(x):OS.delete(x)}},true);
+document.addEventListener('toggle',ev=>{const d=ev.target;if(d.classList&&d.classList.contains('tg')&&d.dataset.id){d.open?NOPEN.add(d.dataset.id):NOPEN.delete(d.dataset.id)}if(d.classList&&d.classList.contains('sec')&&d.dataset.s!==undefined){const x=+d.dataset.s;d.open?OS.add(x):OS.delete(x)}},true);
 const rf=n=>{const p=$('#pn'),st=p.scrollTop;form(n);$('#pn').scrollTop=st};
 const secSum=i=>['',
  (i.l=='want'?'求めリスト':'所持リスト')+' ・ '+i.g,
@@ -543,7 +554,7 @@ function adminMenu(){
 const stl=()=>[...new Set([...Object.keys(D.groups).filter(g=>!D.groups[g].length),...soloList()])].sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
 const soloList=()=>[...new Set([...D.solo,...D.items.flatMap(i=>i.w.concat(epW(i)))])].filter(w=>!D.groups[w]&&!grpsOf(w).length).sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
 const klist2=i=>i.k.map((k,j)=>`<div class="row" style="margin:4px 0;align-items:center;flex-wrap:nowrap"><span style="flex:1;min-width:0;font-size:13px">${k[2]?`<small class="hint">${e(k[2])}　</small>`:''}${e(k[0])}${k[1]?` <small class="hint">${e(k[1])}</small>`:''}${k[3]?`<br><small class="hint">${e(k[3])}</small>`:''}</span><button data-a="kedit" data-j="${j}">編集</button><button class="dng" data-a="kdel" data-j="${j}" aria-label="削除">✕</button></div>`).join('')||'<p class="hint">まだありません</p>';
-let KO=false,EK=-1;
+let KO=false,EK=-1;const NOPEN=new Set();
 function renW(o,n){const U=a=>[...new Set(a.map(w=>w==o?n:w).filter(Boolean))];
  D.items.forEach(i=>{i.w=U(i.w);i.k=i.k.map(k=>{if(!k[3]||k[3].indexOf('出演者: ')<0)return k;const ps=k[3].split(' / ').map(p=>{if(!p.startsWith('出演者: '))return p;const a=U(p.slice(5).split(/\s*[,、，]\s*/));return a.length?'出演者: '+a.join(', '):''}).filter(Boolean);return [k[0],k[1],k[2],ps.join(' / '),...k.slice(4)]})});
  const g={};Object.keys(D.groups).forEach(k=>{const nk=k==o?n:k;if(!nk)return;g[nk]=[...new Set([...(g[nk]||[]),...U(D.groups[k])])]});D.groups=g;D.solo=U(D.solo)}
@@ -577,7 +588,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.t){const[k,v]=d.t.split('|'),a=f[k],j=a.indexOf(v);j<0?a.push(v):a.splice(j,1);x.classList.toggle('on');fcUp();if(k=='w'&&$('#pp'))$('#pp').innerHTML=ppHtml()}
  else if(d.pick!==undefined){const i=D.items[+$('#pn').dataset.n],j=i.w.indexOf(d.pick);j<0?i.w.push(d.pick):i.w.splice(j,1);x.classList.toggle('on');$('#wi').value=i.w.join(',');touch();const lp=$('#lp');if(lp)lp.innerHTML=lpH(i,+$('#pn').dataset.n);ssUp(i)}
  else if(d.na!==undefined){const id=d.id;
-  if(d.na=='add'){const arr=id?fnd(id).n.c:D.notes,nw={id:nid(),t:'新しいノート',b:'',c:[]};arr.push(nw);touch();location.hash='#/n/'+nw.id}
+  if(d.na=='add'){const arr=id?fnd(id).n.c:D.notes,nw={id:nid(),t:'新しい項目',b:'',c:[]};arr.push(nw);if(id)NOPEN.add(id);NOPEN.add(nw.id);touch();if(route()=='must')render();else location.hash='#/n/'+nw.id}
   else if(d.na=='up'||d.na=='dn'){const r=fnd(id);if(r){const a=r.a,p=a.indexOf(r.n),q=d.na=='up'?p-1:p+1;if(q>=0&&q<a.length){[a[p],a[q]]=[a[q],a[p]];touch();render()}}}
   else if(d.na=='rm'){const r=fnd(id);if(r&&confirm('「'+(r.n.t||'無題')+'」を削除しますか？（中のノートも消えます）')){r.a.splice(r.a.indexOf(r.n),1);touch();if(route()=='n/'+id)location.hash=r.p?'#/n/'+r.p.id:'#/must';else render()}}}
  else if(d.a=='cl')closeSheet();
@@ -607,7 +618,7 @@ document.addEventListener('input',t=>{const x=t.target,d=x.dataset;
  const mark=()=>touch();
  if(x.id=='kq'){KQ=x.value;KL=80;$('#kl').innerHTML=klist(D.items[KI])}else if(x.id=='q'){f.q=x.value;fcUp()}else if(x.id=='pq'){PQ=x.value;$('#pp').innerHTML=ppHtml()}
  else if(x.id=='lq'){f.q=x.value;lim=60;const sl=($('.tabs')||0).scrollLeft||0;$('#lb').innerHTML=lbody(SS,1);const t2=$('.tabs');if(t2)t2.scrollLeft=sl}
- else if(d.ntt!==undefined){const r=fnd(d.ntt);if(r){r.n.t=x.value;mark()}}else if(d.nb!==undefined){const r=fnd(d.nb);if(r){r.n.b=x.value;mark()}}
+ else if(d.ntt!==undefined){const r=fnd(d.ntt);if(r){r.n.t=x.value;mark();const sm=document.querySelector('[data-sm="'+d.ntt+'"]');if(sm)sm.textContent=x.value||'（無題）'}}else if(d.nb!==undefined){const r=fnd(d.nb);if(r){r.n.b=x.value;mark()}}
  else if(d.nt!==undefined){D.notice=x.value;mark()}
  else if(d.pg){D.pages[d.pg]=x.value;mark()}
  else if(d.ti!==undefined){D.title=x.value;mark()}
