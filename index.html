@@ -236,6 +236,9 @@ body.tp footer.in{padding-bottom:24px}
 .tgb .pg{margin:0 0 8px}
 details.tg{border-bottom:1px solid var(--ln)}
 .tgb details.tg:last-child{border-bottom:0}
+.mb{padding:0 14px 12px}
+.fr details.mt,.ppl details.mt{margin:8px 0 4px}
+.ro+details.mt{margin:0 0 8px}
 </style>
 </head>
 <body>
@@ -361,6 +364,9 @@ async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
 
 /* ================= 出演者（グループ→メンバー） ================= */
 const grpsOf=m=>Object.keys(D.groups).filter(g=>D.groups[g].includes(m));
+const GT=10,GO=new Set();
+const mtog=(g,inner,open)=>{const n=(D.groups[g]||[]).length;return n>=GT?`<details class="mt" data-gt="${e(g)}"${open||GO.has(g)?' open':''}><summary>メンバー ${n}名</summary><div class="mb">${inner}</div></details>`:inner};
+document.addEventListener('toggle',t=>{const d=t.target;if(d&&d.dataset&&d.dataset.gt){d.open?GO.add(d.dataset.gt):GO.delete(d.dataset.gt)}},true);
 const epW=i=>{const o=[];i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).forEach(a=>{a=a.trim();if(a)o.push(a)})});return o};
 const hitW=(i,w)=>{const t=i.w.concat(epW(i));return t.includes(w)||(D.groups[w]?D.groups[w].some(m=>t.includes(m)):grpsOf(w).some(g=>t.includes(g)))};
 const cntW=w=>D.items.filter(i=>i.l=='have'&&hitW(i,w)).length;
@@ -404,7 +410,7 @@ function ppHtml(){const ch=(v,t)=>`<button type="button" class="chip ${f.w.inclu
  if(PQ.trim()){const q=PQ.trim().toLowerCase(),names=[...new Set([...gs,...inG,...solo])].filter(n=>n.toLowerCase().includes(q)).sort((a,b)=>cntW(b)-cntW(a)).slice(0,60);
   return sel+(names.length?names.map(n=>ch(n)).join(''):'<p class="hint">見つかりません</p>')}
  const hd=t=>`<div class="hint" style="margin:12px 0 4px;font-weight:700">${e(t)}</div>`;
- return sel+gs.filter(g=>D.groups[g].length).map(g=>hd(g)+`<div>${ch(g,D.groups[g].length?g+'（全員）':g)+D.groups[g].map(m=>ch(m)).join('')}</div>`).join('')+(solo.length?hd('STARTO')+`<div>${solo.map(n=>ch(n)).join('')}</div>`:'')}
+ return sel+gs.filter(g=>D.groups[g].length).map(g=>{const ms=D.groups[g],all=ch(g,g+'（全員）');return hd(g)+(ms.length>=GT?`<div>${all}</div>`+mtog(g,ms.map(m=>ch(m)).join(''),ms.some(m=>f.w.includes(m))):`<div>${all+ms.map(m=>ch(m)).join('')}</div>`)}).join('')+(solo.length?hd('STARTO')+`<div>${solo.map(n=>ch(n)).join('')}</div>`:'')}
 
 function pText(k,h,sub){const v=D.pages[k]||'';
  return head(h,sub)+(ed?`<div class="fg"><textarea data-pg="${k}" style="min-height:300px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。変更したら上の「保存」で反映されます。</p>`
@@ -431,7 +437,7 @@ function pPeople(){
  const rest={};D.items.forEach(i=>i.w.forEach(w=>{if(!(D.groups[w]&&D.groups[w].length)&&!grpsOf(w).length)rest[w]=1}));
  const chip=w=>`<button class="chip" data-pw="${e(w)}">${e(w)}<i>${cntW(w)}</i></button>`;
  return head('出演者から探す','名前をタップすると、ジャンルをまたいで所持リストから一覧します')+
- Object.entries(D.groups).filter(([g,ms])=>ms.length).map(([g,ms])=>`<section class="ppl"><h3><span>${e(g)}</span><button data-pw="${e(g)}">${ms.length?ms.length+'名すべて　':''}${cntW(g)}件 ›</button></h3><p class="cl">${ms.map(chip).join('')}</p></section>`).join('')+
+ Object.entries(D.groups).filter(([g,ms])=>ms.length).map(([g,ms])=>`<section class="ppl"><h3><span>${e(g)}</span><button data-pw="${e(g)}">${ms.length?ms.length+'名すべて　':''}${cntW(g)}件 ›</button></h3>${ms.length>=GT?mtog(g,`<p class="cl">${ms.map(chip).join('')}</p>`):`<p class="cl">${ms.map(chip).join('')}</p>`}</section>`).join('')+
  (Object.keys(rest).length?`<section class="ppl"><p class="cl">${Object.keys(rest).sort((a,b)=>cntW(b)-cntW(a)).map(chip).join('')}</p></section>`:'')+
  `<p class="hint">グループ名義で登録した項目（ライブ・音源など）は、そのグループの全メンバー分として数えます。</p>`}
 
@@ -491,7 +497,7 @@ const kh=(k,g)=>{const d=k[1]||k[0],m=(k[3]||'').split(' / '),w=/^出演者[:：
  return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${k[0]&&k[0]!=k[1]&&k[0]!=d?`<span style="display:block;font-weight:600">${e(k[0])}</span>`:''}${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}${w.map(hl).join('、')}</span></div>`}
 function detail(n){anchor(n);if(ed)return form(n);dview(n)}
 function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
- const ro=i.w.filter(w=>D.groups[w]).map(g=>`<div class="ro"><b>${e(g)}</b>${D.groups[g].map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('')}</div>`).join('');
+ const ro=i.w.filter(w=>D.groups[w]).map(g=>{const ms=D.groups[g],inner=ms.map(m=>`<span class="p" data-w="${e(m)}">${e(m)}</span>`).join('');return ms.length>=GT?`<div class="ro"><b>${e(g)}</b></div>`+mtog(g,inner):`<div class="ro"><b>${e(g)}</b>${inner}</div>`}).join('');
  sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px;white-space:pre-wrap">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function secInit(){document.querySelectorAll('#pn details.sec').forEach((d,x)=>{d.dataset.s=x;d.open=OS.has(x)})}
 document.addEventListener('toggle',ev=>{const d=ev.target;if(d.classList&&d.classList.contains('tg')&&d.dataset.id){d.open?NOPEN.add(d.dataset.id):NOPEN.delete(d.dataset.id)}if(d.classList&&d.classList.contains('sec')&&d.dataset.s!==undefined){const x=+d.dataset.s;d.open?OS.add(x):OS.delete(x)}},true);
@@ -563,7 +569,7 @@ function renW(o,n){const U=a=>[...new Set(a.map(w=>w==o?n:w).filter(Boolean))];
  const g={};Object.keys(D.groups).forEach(k=>{const nk=k==o?n:k;if(!nk)return;g[nk]=[...new Set([...(g[nk]||[]),...U(D.groups[k])])]});D.groups=g;D.solo=U(D.solo)}
 function perfMgr(){const gs=Object.keys(D.groups),mem=[...new Set(gs.flatMap(g=>D.groups[g]))],sl=soloList();
  const row=n=>`<div class="row" style="margin:6px 0;align-items:center;flex-wrap:nowrap"><input data-pn="${e(n)}" value="${e(n)}" style="flex:1"><small class="hint" style="white-space:nowrap">${cntW(n)}件</small></div>`,
- card=g=>`<div class="lkrow"><div class="row" style="align-items:center;flex-wrap:nowrap"><input data-pn="${e(g)}" value="${e(g)}" style="flex:1;font-weight:700"><button class="dng" data-a="gdel" data-xg="${e(g)}">削除</button></div><div style="margin:8px 0 4px">${D.groups[g].map(m=>`<button class="chip" data-a="mdel" data-xg="${e(g)}" data-xm="${e(m)}">${e(m)} ✕</button>`).join('')||'<span class="hint">メンバー未登録（STARTO扱い）</span>'}</div><div class="row" style="flex-wrap:nowrap"><input data-mi placeholder="メンバー名を入れて「追加」" style="flex:1" onkeydown="if(event.key=='Enter'){event.preventDefault();this.nextElementSibling.click()}"><button data-a="madd" data-xg="${e(g)}">追加</button></div></div>`;
+ card=g=>`<div class="lkrow"><div class="row" style="align-items:center;flex-wrap:nowrap"><input data-pn="${e(g)}" value="${e(g)}" style="flex:1;font-weight:700"><button class="dng" data-a="gdel" data-xg="${e(g)}">削除</button></div><div style="margin:8px 0 4px">${(()=>{const c=D.groups[g].map(m=>`<button class="chip" data-a="mdel" data-xg="${e(g)}" data-xm="${e(m)}">${e(m)} ✕</button>`).join('');return c?mtog(g,c):'<span class="hint">メンバー未登録（STARTO扱い）</span>'})()}</div><div class="row" style="flex-wrap:nowrap"><input data-mi placeholder="メンバー名を入れて「追加」" style="flex:1" onkeydown="if(event.key=='Enter'){event.preventDefault();this.nextElementSibling.click()}"><button data-a="madd" data-xg="${e(g)}">追加</button></div></div>`;
  sheet(`<div class="fg">${xbtn('閉じる')}<h2>出演者の編集</h2><p class="hint">メンバーの追加・削除、グループの追加・削除はその場で反映されます。名前の書き換えは、書き換えてから一番下の「変更を反映」を押してください（すべての作品・収録内容に反映。空にすると削除、既存の名前にすると統合）。</p>
  <div class="fr"><h4>グループ（${gs.length}）</h4>${gs.map(card).join('')}</div>
  <div class="fr"><h4>グループを追加</h4><label>グループ名</label><input id="pnew" placeholder="例：なにわ男子"><p class="hint">追加すると上のグループ一覧にカードができます。メンバーはそのカードで1人ずつ追加します。</p><div class="row"><button class="on" data-a="pmadd">グループを追加</button></div></div>
