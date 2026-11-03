@@ -298,6 +298,21 @@ function sbar(){let b=document.getElementById('sb');if(!SM||!ed){if(b)b.remove()
 function selTog(n,r){const it=D.items[n];SELO.has(it)?SELO.delete(it):SELO.add(it);r.classList.toggle('sel');const c=r.querySelector('.ck');if(c)c.classList.toggle('on');sbar()}
 const bulkH=()=>{const g=(h,k,vals,lab)=>`<div class="fr"><h4>${h}</h4><div>${vals.map(v=>`<button class="chip" data-a="bset" data-bk="${k}" data-bv="${e(v)}">${e(lab?lab[v]:(v||'未設定'))}</button>`).join('')}</div></div>`;
  return `${xbtn('閉じる')}<h2>${SELO.size}件をまとめて変更</h2>${g('ジャンル','g',GENRES)}${g('リスト','l',['have','want'],{have:'所持リスト',want:'求めリスト'})}${g('配布','o',['',...OWN])}${g('交換','ex',['',...EXO])}${g('求め度','p',['',...WANT])}`};
+const vgDef=()=>`この共有ページでは「${SHK||'所持リスト'}」を見られます。
+
+■ 見かた
+・行をタップすると、出演者・収録内容・配布方法などの詳細が開きます。
+・「配布可」「要相談」「配布不可」は、配布できるかどうかの目安です。
+・上のタブで、ジャンルを切り替えられます。
+
+■ 探しかた
+・右上の「検索」から、タイトル・出演者・メンバー名で探せます。
+・検索の「出演者」で、グループやメンバーを選んで絞り込めます。
+・詳細を開いて、出演者の名前をタップしても絞り込めます。
+
+■ ホーム画面に追加
+・ブラウザの共有メニューから「ホーム画面に追加」を選ぶと、アプリのように開けます。`;
+const vguideH=()=>`${xbtn('閉じる')}<h2>使い方</h2><div class="pg">${linkify(((D.pages&&D.pages.share)||'').trim()||vgDef())}</div>`;
 const NK='ola.newSeen';let NT=new Set();
 const CO=new Intl.Collator('ja',{numeric:true,sensitivity:'base'}),tk=t=>t.replace(/^[\s【\[「『（(〈"'“]+/,'');
 function initNew(){NT=new Set();if(VW)return;let sn=[];try{sn=JSON.parse(localStorage.getItem(NK))||[]}catch(x){}
@@ -487,7 +502,7 @@ function lbody(k,srch){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&L.g.inc
  
  ${ed&&!srch?`<p><button data-a="add">＋この一覧に追加</button> <button data-a="selm">${SM?'選択を終了':'選択して一括編集'}</button></p>`:''}${h||(none?'<p class="empty">キーワードを入れるか、「絞り込み」で出演者・ジャンルを選んでください</p>':'<p class="empty">該当するものがありません</p>')}${rows.length>lim?'<p><button id="mo">もっと見る</button></p>':''}`}
 
-function pList(k){const L=LISTS[k];return head(L.n,L.sub+(L.d?'　'+L.d:''))+lbody(k)}
+function pList(k){const L=LISTS[k];return head(L.n,L.sub+(L.d?'　'+L.d:''))+(VW?`<p class="row" style="margin:0 0 10px"><button data-a="vguide">使い方</button></p>`:'')+lbody(k)}
 
 /* ================= 描画 ================= */
 function render(){if(!D)return;sbar();const r=route();
@@ -584,6 +599,7 @@ function filt(){const L=curL();if(!L)return;PQ='';
 function adminMenu(){
  sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
+ <label>共有ページの使い方（共有リンクで開いた人に表示。空欄なら標準の文面）</label><textarea data-pg="share" style="min-height:140px" placeholder="${e(vgDef())}">${e((D.pages&&D.pages.share)||'')}</textarea>
  <details class="mt"><summary>グループをテキストで編集（上級者向け）</summary><div class="in"><label>1行に1グループ　「グループ名：メンバー,メンバー」</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div></details></div>
  <div class="row"><button data-a="pm">出演者・グループを編集</button><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・免責事項・お知らせを直接編集できます。</p>'}`}`)}
 const stl=()=>[...new Set([...Object.keys(D.groups).filter(g=>!D.groups[g].length),...soloList()])].sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
@@ -627,6 +643,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
   else if(d.na=='up'||d.na=='dn'){const r=fnd(id);if(r){const a=r.a,p=a.indexOf(r.n),q=d.na=='up'?p-1:p+1;if(q>=0&&q<a.length){[a[p],a[q]]=[a[q],a[p]];touch();render()}}}
   else if(d.na=='rm'){const r=fnd(id);if(r&&confirm('「'+(r.n.t||'無題')+'」を削除しますか？（中のノートも消えます）')){r.a.splice(r.a.indexOf(r.n),1);touch();if(route()=='n/'+id)location.hash=r.p?'#/n/'+r.p.id:'#/must';else render()}}}
  else if(d.a=='cl')closeSheet();
+ else if(d.a=='vguide')sheet(vguideH());
  else if(d.a=='pv')dview(+d.n,`<p style="text-align:right;margin:0"><button data-a="pvb" data-n="${d.n}">← 編集に戻る</button></p>`);else if(d.a=='pvb')form(+d.n);
  else if(d.a=='kf')$('#kf').click();
  else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();const wE=EK>=0;if(wE){i.k.splice(EK,1);EK=-1}mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),[ws.length?'出演者: '+ws.join(', '):'',$('#qq').value.trim()?'画質: '+$('#qq').value.trim():'',$('#qm').value.trim()?'分数: '+$('#qm').value.trim().replace(/^(\d+)$/,'$1分'):'',nt].filter(Boolean).join(' / ')]]);LK=ss;mk();rf(n);toast((tt||dt)+(wE?' を更新しました':' を追加しました'));{const q=$('#qe');if(q)q.focus({preventScroll:true})}}}else if(d.a=='jmp'){const el=document.querySelectorAll('#pn details.sec')[+d.s];if(el){el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'})}}else if(d.a=='sall'){document.querySelectorAll('#pn details.sec').forEach(a=>a.open=d.o=='1')}else if(d.a=='padd'){const n=+$('#pn').dataset.n,i=D.items[n],v=[$('#pnn').value.trim()].filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a);if(!i.w.includes(a))i.w.push(a)});touch();rf(n);toast(v.join('、')+' を追加しました')}}else if(d.a=='kdel'){const n=+$('#pn').dataset.n;D.items[n].k.splice(+d.j,1);KO=true;EK=-1;mk();rf(n)}else if(d.a=='pmaddp'){const v=[$('#pnp').value.trim()].filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a)});mk();render();perfMgr();toast('追加しました')}}else if(d.a=='pm'){perfMgr()}else if(d.a=='pmadd'){const v=$('#pnew').value.trim(),ms=[];if(!v)toast('グループ名を入れてください');else if(D.groups[v])toast('すでにあります');else{D.groups[v]=[...new Set(ms)];mk();render();perfMgr();toast(v+' を追加しました')}}else if(d.a=='madd'){const v=[x.closest('.lkrow').querySelector('[data-mi]').value.trim()].filter(Boolean);if(!v.length)toast('メンバー名を入れてください');else{const ok=v.filter(n=>!(D.groups[n]&&(n==d.xg||desc(n).has(d.xg))));if(ok.length<v.length)toast('そのグループは中に入れられません');D.groups[d.xg]=[...new Set([...D.groups[d.xg],...ok])];mk();render();perfMgr()}}else if(d.a=='gsub'){D.groups[d.xg]=[...new Set([...D.groups[d.xg],d.xm])];mk();render();perfMgr()}else if(d.a=='mdel'){D.groups[d.xg]=D.groups[d.xg].filter(m=>m!=d.xm);mk();render();perfMgr()}else if(d.a=='gdel'){if(confirm('グループ「'+d.xg+'」を削除しますか？（作品の出演者タグからも外れます。メンバー個人は残ります）')){renW(d.xg,'');mk();render();perfMgr()}}else if(d.a=='pmsave'){const c=[...document.querySelectorAll('#pn [data-pn]')].filter(x=>x.value.trim()!==x.dataset.pn);if(!c.length)toast('変更はありません');else if(confirm(c.length+'件の名前を変更・削除します。よろしいですか？')){c.forEach(x=>renW(x.dataset.pn,x.value.trim()));mk();render();perfMgr();toast('反映しました')}}else if(d.a=='qbulk'){const n=+$('#pn').dataset.n,i=D.items[n],ss=$('#qs').value.trim(),qq=$('#qq').value.trim(),ls=$('#qb').value.split('\n').map(a=>a.trim().replace(/^\d+[.．、)）]\s*/,'')).filter(Boolean);if(!ss)toast('見出し（シングル・アルバム名）を入れてください');else if(!ls.length)toast('曲名を入れてください');else{mergeK(i,ls.map(t=>[t,'',ss,qq?'画質: '+qq:'']));LK=ss;mk();rf(n);toast(ss+' に '+ls.length+'曲を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
