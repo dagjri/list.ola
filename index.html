@@ -99,7 +99,7 @@ input[type=date]{display:block;width:100%;min-width:0;max-width:100%;min-height:
 .fv{border:0;background:none;min-height:36px;min-width:36px;padding:0;font-size:20px;line-height:1;color:var(--fg)}h2 .fv{vertical-align:middle}
 .vw .back,.vw #ft,.vw #bl{display:none}
 .wsw{display:block;position:relative}.ws{display:block;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}.ws::-webkit-scrollbar{display:none}.wsw.more::after{content:'スライドで続き ›';position:absolute;right:0;top:0;bottom:2px;display:flex;align-items:center;padding:0 2px 0 28px;font-size:11px;color:var(--mu);background:linear-gradient(to right,transparent,var(--bg) 60%);pointer-events:none}
-.ep{display:grid;grid-template-columns:84px 1fr;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--ln)}.ep .d{font:12px/1.9 ui-monospace,Menlo,Consolas,monospace;color:var(--mu)}.ep .w{font-size:14px;line-height:1.8}.ep .w b{border-bottom:2px solid var(--fg)}.ep .b{margin-left:0;margin-right:6px}
+.ep{display:grid;grid-template-columns:84px minmax(0,1fr);gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--ln)}.ep .d{font:12px/1.9 ui-monospace,Menlo,Consolas,monospace;color:var(--mu)}.ep .w{min-width:0;font-size:14px;line-height:1.8}.ep .w b{border-bottom:2px solid var(--fg)}.ep .b{margin-left:0;margin-right:6px}
 .yh{margin:18px 0 0;font-size:12px;letter-spacing:.2em;color:var(--mu);border-bottom:1px solid var(--fg);padding-bottom:3px;font-weight:600}
 .b.hot{background:var(--fg);color:var(--bg)}
 .sh{margin:22px 0 2px;font-size:13px;font-weight:700;letter-spacing:.12em;border-bottom:1px solid var(--fg);padding-bottom:3px}.sh i{font-style:normal;font-weight:400;color:var(--mu);font-size:11px;margin-left:8px;letter-spacing:0}
@@ -426,7 +426,7 @@ const leaves=g=>[...desc(g)].filter(m=>!D.groups[m]);
 const roots=()=>{const gs=Object.keys(D.groups).filter(g=>D.groups[g].length);return gs.filter(g=>!gs.some(p=>p!=g&&desc(p).has(g)))};
 const treeH=(g,chip,seen=[g])=>kids(g).map(m=>D.groups[m]&&D.groups[m].length&&!seen.includes(m)?`<div class="sg"><div class="sgh">${chip(m,true)}</div>${treeH(m,chip,[...seen,m])}</div>`:chip(m,false)).join('');
 const GT=10,GO=new Set();
-const mtog=(g,inner,open)=>{const n=leaves(g).length;return n>=GT?`<details class="mt" data-gt="${e(g)}"${open||GO.has(g)?' open':''}><summary>メンバー ${n}名</summary><div class="mb">${inner}</div></details>`:inner};
+const mtog=(g,inner,open)=>{const n=leaves(g).length;return n>=GT?`<details class="mt" data-gt="${e(g)}"${open||GO.has(g)?' open':''}><summary>メンバー ${n}名</summary><div class="mb"><div class="wsw"><div class="ws">${inner}</div></div></div></details>`:inner};
 document.addEventListener('toggle',t=>{const d=t.target;if(d&&d.dataset&&d.dataset.gt){d.open?GO.add(d.dataset.gt):GO.delete(d.dataset.gt)}},true);
 const epW=i=>{const o=[];i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).forEach(a=>{a=a.trim();if(a)o.push(a)})});return o};
 const hitWr=(i,r)=>i.w.concat(epW(i)).some(x=>r.has(x)),hitW=(i,w)=>hitWr(i,relOf(w));
@@ -576,8 +576,8 @@ const kh=(k,g)=>{const d=k[1]||k[0],m=(k[3]||'').split(' / '),w=/^出演者[:：
  return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${k[0]&&k[0]!=k[1]&&k[0]!=d?`<span style="display:block;font-weight:600">${e(k[0])}</span>`:''}${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}<span class="wsw"><span class="ws">${w.map(hl).join('、')}</span></span></span></div>`}
 function detail(n){anchor(n);if(ed)return form(n);dview(n)}
 function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
- const ro=i.w.filter(w=>D.groups[w]&&D.groups[w].length).map(g=>{const inner=treeH(g,(m,isG)=>`<span class="p${isG?' g':''}" data-w="${e(m)}">${e(m)}</span>`);return leaves(g).length>=GT?`<div class="ro"><b>${e(g)}</b></div>`+mtog(g,inner):`<div class="ro"><b>${e(g)}</b>${inner}</div>`}).join('');
- sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px;white-space:pre-wrap">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
+ const ro=i.w.filter(w=>D.groups[w]&&D.groups[w].length).map(g=>{const inner=treeH(g,(m,isG)=>`<span class="p${isG?' g':''}" data-w="${e(m)}">${e(m)}</span>`);return leaves(g).length>=GT?`<div class="ro"><b>${e(g)}</b></div>`+mtog(g,inner):`<div class="ro"><div class="wsw"><div class="ws"><b>${e(g)}</b>${inner}</div></div></div>`}).join('');
+ sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2><div class="wsw"><div class="ws">${tags(i)}</div></div>${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px;white-space:pre-wrap">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function secInit(){document.querySelectorAll('#pn details.sec').forEach((d,x)=>{d.dataset.s=x;d.open=OS.has(x)})}
 document.addEventListener('toggle',ev=>{const d=ev.target;if(d.classList&&d.classList.contains('tg')&&d.dataset.id){d.open?NOPEN.add(d.dataset.id):NOPEN.delete(d.dataset.id)}if(d.classList&&d.classList.contains('sec')&&d.dataset.s!==undefined){const x=+d.dataset.s;d.open?OS.add(x):OS.delete(x)}},true);
 const rf=n=>{const p=$('#pn'),st=p.scrollTop;form(n);$('#pn').scrollTop=st};
