@@ -745,7 +745,7 @@ addEventListener('beforeinstallprompt',t=>{t.preventDefault();DP=t});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 init();
 
-(function(){const chk=r=>{(r||document).querySelectorAll('.wsw').forEach(w=>{const s=w.firstElementChild;w.classList.toggle('more',s.scrollWidth>s.clientWidth+2&&s.scrollLeft+s.clientWidth<s.scrollWidth-2)})};let T;new MutationObserver(()=>{clearTimeout(T);T=setTimeout(()=>chk(),50)}).observe(document.body||document.documentElement,{childList:true,subtree:true});document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&t.classList&&t.classList.contains('ws'))chk(t.parentNode)},true);addEventListener('resize',()=>chk())})();
+(function(){const one=w=>{const s=w.firstElementChild;if(s)w.classList.toggle('more',s.scrollWidth>s.clientWidth+2&&s.scrollLeft+s.clientWidth<s.scrollWidth-4)},chk=()=>document.querySelectorAll('.wsw').forEach(one);let T;new MutationObserver(()=>{clearTimeout(T);T=setTimeout(()=>chk(),50)}).observe(document.body||document.documentElement,{childList:true,subtree:true});document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&t.classList&&t.classList.contains('ws'))one(t.parentNode)},true);addEventListener('resize',()=>chk())})();
 </script>
 </body>
 </html>
