@@ -312,7 +312,7 @@ const vgDef=()=>`この共有ページでは「${SHK||'所持リスト'}」を�
 
 ■ ホーム画面に追加
 ・ブラウザの共有メニューから「ホーム画面に追加」を選ぶと、アプリのように開けます。`;
-const vguideH=()=>`${xbtn('閉じる')}<h2>使い方</h2><div class="pg">${linkify(((D.pages&&D.pages.share)||'').trim()||vgDef())}</div>`;
+const vguideH=()=>{const t=((D.pages&&D.pages.share)||'').trim();return `${xbtn('閉じる')}<h2>使い方</h2>${gslH(vgS())}${t?`<div class="pg" style="margin-top:18px;border-top:1px solid var(--ln);padding-top:12px">${linkify(t)}</div>`:''}`}
 const NK='ola.newSeen';let NT=new Set();
 const CO=new Intl.Collator('ja',{numeric:true,sensitivity:'base'}),tk=t=>t.replace(/^[\s【\[「『（(〈"'“]+/,'');
 function initNew(){NT=new Set();if(VW)return;let sn=[];try{sn=JSON.parse(localStorage.getItem(NK))||[]}catch(x){}
@@ -457,12 +457,12 @@ function pText(k,h,sub){const v=D.pages[k]||'';
  return head(h,sub)+(ed?`<div class="fg"><textarea data-pg="${k}" style="min-height:300px">${e(v)}</textarea></div><p class="hint">URL はそのままリンクになります。変更したら上の「保存」で反映されます。</p>`
   :v.trim()?`<div class="pg">${linkify(v)}</div>`:`<p class="empty">まだ書かれていません</p>`)}
 
-function pGuide(){const sv=i=>`<svg viewBox="0 0 200 150" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="62" y="4" width="76" height="142" rx="12"/>${i}</svg>`,
+const gk=(()=>{const sv=i=>`<svg viewBox="0 0 200 150" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="62" y="4" width="76" height="142" rx="12"/>${i}</svg>`,
  rw=(y,o)=>`<rect x="70" y="${y}" width="60" height="14" stroke-width="1.5" ${o?'fill="currentColor" fill-opacity=".14"':''}/>`,
  fg=(x,y)=>`<circle cx="${x}" cy="${y}" r="10" fill="currentColor" fill-opacity=".2" stroke="none"/><circle cx="${x}" cy="${y}" r="3.5" fill="currentColor" stroke="none"/>`,
  pill=(x,y,w,o)=>`<rect x="${x}" y="${y}" width="${w}" height="11" rx="5.5" stroke-width="1.5" ${o?'fill="currentColor"':''}/>`,
- ic=[72,92,112].flatMap(x=>[24,48,72,96].map(y=>`<rect x="${x}" y="${y}" width="16" height="16" rx="4.5" stroke-width="1.5" ${x==92&&y==48?'fill="currentColor"':''}/>`)).join('');
- const S=[
+ ic=[72,92,112].flatMap(x=>[24,48,72,96].map(y=>`<rect x="${x}" y="${y}" width="16" height="16" rx="4.5" stroke-width="1.5" ${x==92&&y==48?'fill="currentColor"':''}/>`)).join('');return{sv,rw,fg,pill,ic}})();
+function guideS(){const{rw,fg,pill,ic}=gk;return[
  ['トップから選ぶ','「所持リスト」「求めリスト」「お気に入り」「検索」から開きます。「必読」には、ご利用の前に読んでほしいことをまとめています。',rw(24)+rw(46,1)+rw(68)+rw(90)+fg(100,53)],
  ['ジャンルで切り替え','リスト上部のタブを横にスワイプして、ジャンルを選びます。',pill(70,22,18,1)+pill(92,22,18)+pill(114,22,18)+`<path d="M76 46h50M118 40l8 6-8 6" stroke-dasharray="3 4"/>`+fg(96,46)+rw(64)+rw(84)+rw(104)],
  ['タイトルをタップ','備考や収録内容、出演者のメンバー名が開きます。',rw(24)+rw(44,1)+fg(100,51)+`<rect x="66" y="74" width="68" height="66" rx="8" fill="currentColor" fill-opacity=".08"/><path d="M74 88h40M74 100h52M74 112h46M74 124h30" stroke-width="1.5"/>`],
@@ -470,8 +470,20 @@ function pGuide(){const sv=i=>`<svg viewBox="0 0 200 150" fill="none" stroke="cu
  ['検索で絞り込み','文字・ジャンル・出演者・配布を組み合わせられます。出演者はグループ → メンバーの順に選べ、名前を入れて探すこともできます。',`<rect x="70" y="22" width="60" height="14" rx="7" stroke-width="1.5"/><circle cx="79" cy="29" r="3" stroke-width="1.5"/>`+pill(70,44,18,1)+pill(92,44,18)+pill(114,44,16,1)+fg(101,50)+rw(70)+rw(90)+rw(110)],
  ['お気に入り','各行の ☆ をタップ。ログイン不要で、この端末のブラウザに保存されます（端末やブラウザを変えると引き継がれません）。',[28,50,72].map((y,x)=>rw(y)+`<text x="118" y="${y+11}" font-size="11" fill="currentColor" stroke="none">${x==1?'★':'☆'}</text>`).join('')+fg(121,57)],
  ['ホーム画面に追加','ページ下の「ホーム画面に追加」から、アプリのように起動できます。',ic+fg(100,56)+`<rect x="74" y="122" width="52" height="14" rx="7" stroke-width="1.5"/>`]
- ];
- return head('見かた','')+`<div class="gsl">${S.map(x=>`<section>${sv(x[2])}<h3>${x[0]}</h3><p>${x[1]}</p></section>`).join('')}</div><div class="gdt">${S.map((x,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div><p class="hint" style="text-align:center">← スワイプしてめくれます →</p>`}
+ ]}
+const gslH=S=>`<div class="gsl">${S.map(x=>`<section>${gk.sv(x[2])}<h3>${x[0]}</h3><p>${x[1]}</p></section>`).join('')}</div><div class="gdt">${S.map((x,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div><p class="hint" style="text-align:center">← スワイプしてめくれます →</p>`;
+function pGuide(){return head('見かた','')+gslH(guideS())}
+/* 共有ページ（所持リストだけ）用のイラスト付き使い方 */
+const vgS=()=>{const G=guideS(),{rw,fg,pill}=gk;
+ return[
+  ['この共有ページについて',`「${SHK||'所持リスト'}」の一覧を見るためのページです。使い方を順番にご案内します。`,rw(24)+rw(46)+rw(68)+rw(90)],
+  G[1],
+  ['タイトルをタップ','出演者・収録内容・配布方法などの詳細が開きます。',G[2][2]],
+  ['配布の目安','「配布可」「要相談」「配布不可」のバッジで、配布できるかどうかの目安がわかります。バッジのない作品は、まだ目安が付いていません。',[30,56,82].map((y,x)=>rw(y)+`<path d="M75 ${y+7}h20" stroke-width="2"/>`+pill(102,y+1.5,24,x==0)).join('')],
+  ['出演者の名前をタップ','詳細を開いて出演者の名前をタップすると、その人・グループの作品だけが並びます。',G[3][2]],
+  ['検索で絞り込み','右上の「検索」から、タイトル・ジャンル・出演者・配布を組み合わせて探せます。出演者はグループ → メンバーの順に選べます。',G[4][2]],
+  ['ホーム画面に追加','ブラウザの共有メニューから「ホーム画面に追加」を選ぶと、アプリのように開けます。',G[6][2]]
+ ]};
 
 document.addEventListener('scroll',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('gsl')){const k=Math.round(t.scrollLeft/t.clientWidth);t.nextElementSibling.querySelectorAll('i').forEach((d,x)=>d.classList.toggle('on',x==k))}},true);
 function pPeople(){
@@ -599,7 +611,7 @@ function filt(){const L=curL();if(!L)return;PQ='';
 function adminMenu(){
  sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
- <label>共有ページの使い方（共有リンクで開いた人に表示。空欄なら標準の文面）</label><textarea data-pg="share" style="min-height:140px" placeholder="${e(vgDef())}">${e((D.pages&&D.pages.share)||'')}</textarea>
+ <label>共有ページの補足（共有リンクの「使い方」で、イラストの下に表示。空欄なら何も出しません）</label><textarea data-pg="share" style="min-height:140px" placeholder="例：配布のお願い、お問い合わせ先など">${e((D.pages&&D.pages.share)||'')}</textarea>
  <details class="mt"><summary>グループをテキストで編集（上級者向け）</summary><div class="in"><label>1行に1グループ　「グループ名：メンバー,メンバー」</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div></details></div>
  <div class="row"><button data-a="pm">出演者・グループを編集</button><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・免責事項・お知らせを直接編集できます。</p>'}`}`)}
 const stl=()=>[...new Set([...Object.keys(D.groups).filter(g=>!D.groups[g].length),...soloList()])].sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
