@@ -62,7 +62,7 @@ h4{font-size:12px;letter-spacing:.16em;color:var(--mu);margin:22px 0 6px;font-we
 .gh{margin:26px 0 0;font-size:12px;letter-spacing:.2em;color:var(--mu);border-bottom:1px solid var(--fg);padding-bottom:4px;font-weight:600}
 .p{display:inline-block;border:1px solid var(--mu);padding:0 8px;font-size:12px;margin:3px 4px 2px 0;cursor:pointer;line-height:1.7}
 .p.g{border-color:var(--fg);font-weight:700}
-.b{display:inline-block;border:1px solid var(--fg);font-size:10px;padding:0 5px;margin-left:6px;line-height:1.5;vertical-align:1px}
+.k small,.ep .b{white-space:pre-wrap}.b{display:inline-block;border:1px solid var(--fg);font-size:10px;padding:0 5px;margin-left:6px;line-height:1.5;vertical-align:1px}
 .pg{white-space:pre-wrap;word-break:break-word}
 .pg a{text-underline-offset:3px}
 .empty{color:var(--mu);padding:30px 0;text-align:center;font-size:13px}
@@ -98,6 +98,7 @@ input[type=date]{display:block;width:100%;min-width:0;max-width:100%;min-height:
 .r{position:relative;padding-right:40px}.r .fv{position:absolute;right:0;top:8px}
 .fv{border:0;background:none;min-height:36px;min-width:36px;padding:0;font-size:20px;line-height:1;color:var(--fg)}h2 .fv{vertical-align:middle}
 .vw .back,.vw #ft,.vw #bl{display:none}
+.wsw{display:block;position:relative}.ws{display:block;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}.ws::-webkit-scrollbar{display:none}.wsw.more::after{content:'スライドで続き ›';position:absolute;right:0;top:0;bottom:2px;display:flex;align-items:center;padding:0 2px 0 28px;font-size:11px;color:var(--mu);background:linear-gradient(to right,transparent,var(--bg) 60%);pointer-events:none}
 .ep{display:grid;grid-template-columns:84px 1fr;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--ln)}.ep .d{font:12px/1.9 ui-monospace,Menlo,Consolas,monospace;color:var(--mu)}.ep .w{font-size:14px;line-height:1.8}.ep .w b{border-bottom:2px solid var(--fg)}.ep .b{margin-left:0;margin-right:6px}
 .yh{margin:18px 0 0;font-size:12px;letter-spacing:.2em;color:var(--mu);border-bottom:1px solid var(--fg);padding-bottom:3px;font-weight:600}
 .b.hot{background:var(--fg);color:var(--bg)}
@@ -332,7 +333,7 @@ const DR=/(\d{4})[.\/\-年](\d{1,2})[.\/\-月](\d{1,2})日?/;
 const csvSplit=l=>{const o=[];let c='',q=0;for(const ch of l){if(ch=='"')q=!q;else if(ch==','&&!q){o.push(c);c=''}else c+=ch}o.push(c);return o};
 function rowK(p){p=p.map(a=>a.trim());const m=p[0].match(DR);
  if(m&&m.index==0&&p[0].replace(DR,'').trim()==''&&!DR.test(p[1]||'')){const d=m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');return[d,d,'放送回',[p[1]?'出演者: '+p[1]:'',p[2]||''].filter(Boolean).join(' / ')]}
- return[p[0]||'',p[1]||'',p[2]||'',p[3]||'']}
+ return[p[0]||'',p[1]||'',p[2]||'',(p[3]||'').replace(/\\n/g,'\n')]}
 function parseK(tx){const o=[];let c=null;
  tx.split(/\r?\n/).forEach(l=>{l=l.trim();if(!l||/^アイテム名/.test(l))return;
   if(/[|\t]/.test(l)||/^\d{4}[.\/\-]\d{1,2}[.\/\-]\d{1,2}\s*,/.test(l)){o.push(rowK(/[|\t]/.test(l)?l.split(/[|\t]/):csvSplit(l)));c=null;return}
@@ -341,6 +342,20 @@ function parseK(tx){const o=[];let c=null;
   else if(c)c[3]=(c[3]?c[3]+' / ':'')+h;
   else o.push([h,'','',''])});return o}
 function mergeK(i,a){const K=k=>k[0]+'|'+k[1]+'|'+(k[2]||''),m=new Map(i.k.map(k=>[K(k),k]));a.forEach(k=>m.set(K(k),k));i.k=[...m.values()].sort(kcmp)}
+const DR2=/(\d{4})\s*[.\/\-年]\s*(\d{1,2})\s*[.\/\-月]\s*(\d{1,2})\s*日?(?:\s*[（(][月火水木金土日祝][）)])?/;
+const zn=s=>s.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).replace(/／/g,'/').replace(/．/g,'.').replace(/[－−]/g,'-');
+const SECW=/^(本編|特典映像|映像特典|特典|メイキング|ボーナス映像|コメンタリー|音源|収録曲)$/;
+const secOf=l=>{const m=l.match(/^(?:[■□●◆▼▽◇◎▶]|#{1,6}\s+)\s*(.+?)\s*$/)||l.match(/^[【\[［]([^【】\[\]［］]{1,20})[】\]］]$/)||l.match(/^(.{1,20}?)\s*[:：]$/);return m?m[1].trim():(SECW.test(l)?l:null)};
+function parseB(tx,h,q){const o=[];let sec=h;
+ tx.split(/\r?\n/).forEach(raw=>{const l=raw.trim();if(!l)return;
+  const nl=zn(l),dm=nl.match(DR2),ok=!!dm&&+dm[2]>=1&&+dm[2]<=12&&+dm[3]>=1&&+dm[3]<=31&&!(dm.index>0&&/\d/.test(nl[dm.index-1]));
+  if(!ok){const x=secOf(l);if(x){sec=x;return}}
+  let d='',t=l;
+  if(ok){d=dm[1]+'-'+dm[2].padStart(2,'0')+'-'+dm[3].padStart(2,'0');t=l.slice(0,dm.index)+' '+l.slice(dm.index+dm[0].length)}
+  t=t.replace(/[（(\[【［]\s*[）)\]】］]/g,'').replace(/^[\s\u3000]*(?:[\d０-９]+[.．、)）]|[-*・●]\s)\s*/,'').replace(/[\s\u3000]{2,}/g,' ').replace(/^[\s\u3000:：,，、|｜]+|[\s\u3000:：,，、|｜]+$/g,'');
+  if(!t&&!d)return;
+  o.push([t||d,d,sec||(t?'':'放送回'),q&&sec!='音源'?'画質: '+q:''])});
+ return o}
 const KW=/^(本編|特典映像|映像特典|特典|メイキング|ボーナス映像|コメンタリー)$/;
 const kv=k=>KW.test(k[0])&&!k[2]&&k[3]?[k[3],k[1],k[0],'']:k;
 const en=k=>{const q=(k[0]||'').match(/\d+/);return q?+q[0]:1e9};
@@ -355,7 +370,7 @@ function hitK(i){const q=f.q.toLowerCase().split(/\s+/).filter(Boolean),ws=wsF()
  return h.length?'　<b>該当 '+h.length+'回</b>'+(h.length<=5?'：'+h.map(k=>e(k[1]||k[0])).join('、'):''):''}
 let QW=new Set();
 const perf=i=>{const c={};i.k.forEach(k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);if(m)m[1].split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>c[a]=(c[a]||0)+1)});return c};
-const kchips=i=>{const s=new Set(['本編','特典映像','メイキング']);i.k.map(kv).forEach(k=>{if(k[2]&&k[2]!='放送回')s.add(k[2])});return[...s].map(v=>`<button type="button" class="chip ${v==LK?'on':''}" data-ks="${e(v)}">${e(v)}</button>`).join('')};
+const kchips=i=>{const s=new Set(['本編','特典映像','音源','メイキング']);i.k.map(kv).forEach(k=>{if(k[2]&&k[2]!='放送回')s.add(k[2])});return[...s].map(v=>`<button type="button" class="chip ${v==LK?'on':''}" data-ks="${e(v)}">${e(v)}</button>`).join('')};
 const qchips=i=>{const c=perf(i);i.w.forEach(w=>(D.groups[w]||[w]).forEach(a=>{c[a]=c[a]||0}));QW.forEach(a=>c[a]=c[a]||0);return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,60).map(a=>`<button type="button" class="chip ${QW.has(a[0])?'on':''}" data-qw="${e(a[0])}">${e(a[0])}</button>`).join('')};
 function klist(i){const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),r=i.k.filter(k=>{const s=k.join(' ').toLowerCase();return q.every(w=>s.includes(w))}).map(kv);
  const G=[...new Set(r.map(k=>k[2]).filter(x=>x&&x!='放送回'))];let y='',h='',c=0;
@@ -514,8 +529,9 @@ function lbody(k,srch){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&L.g.inc
  rows.sort((a,b)=>{if(MD=='kana')return kc(a,b);if(hk){const x=hk(a),y=hk(b);if(x!=y){if(MD=='prf')return x==PL?-1:1;if(x==OT)return 1;if(y==OT)return -1;return CO.compare(x,y)}}return(G0?gi(a)-gi(b):0)||(L.l=='want'?PI(a[0].p)-PI(b[0].p):0)||kc(a,b)});
  VIS=rows.map(r=>r[1]);
  const chips=[...(f.q&&!srch?[['q',f.q]]:[]),...f.g.map(v=>['g',v]),...f.w.map(v=>['w',v]),...f.o.map(v=>['o',v])];
- let h='',last='';
- rows.slice(0,lim).forEach(([i,n])=>{const gk=hk?hk([i,n]):(G?i.g:null);if(gk!==null&&gk!=last){last=gk;h+=`<h3 class="gh">${e(gk)}</h3>`}
+ let h='',last='',lg='';const PG=MD=='prf'&&G0;
+ rows.slice(0,lim).forEach(([i,n])=>{const gk=hk?hk([i,n]):(G?i.g:null);if(gk!==null&&gk!=last){last=gk;lg='';h+=`<h3 class="gh">${e(gk)}</h3>`}
+  if(PG&&i.g!=lg){lg=i.g;h+=`<h3 class="gh" style="font-size:.85em;opacity:.7">${e(i.g)}</h3>`}
   h+=rowH(i,n)});
  return `${L.g.length>1&&!none?`<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?mm.length:t=='New'?mm.filter(i=>i.n.startsWith('【NEW】')).length:mm.filter(i=>i.g==t).length}</i></button>`).join('')}</div>`:''}
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
@@ -557,10 +573,10 @@ const xbtn=t=>`<p style="text-align:right;margin:0"><button data-a="cl">${t||'�
 const kh=(k,g)=>{const d=k[1]||k[0],m=(k[3]||'').split(' / '),w=/^出演者[:：]/.test(m[0])?m.shift().replace(/^出演者[:：]\s*/,'').split(/[,、，]\s*/):null;
  if(!w||!DR.test(d))return`<div class="k">${e(k[0])}<small>${[k[1]==k[0]?'':k[1],g?'':k[2],k[3]].filter(Boolean).map(e).join(' ・ ')}</small></div>`;
  const q=KQ.toLowerCase().split(/\s+/).filter(Boolean),hl=n=>q.some(t=>n.toLowerCase().includes(t))?`<b>${e(n)}</b>`:e(n);
- return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${k[0]&&k[0]!=k[1]&&k[0]!=d?`<span style="display:block;font-weight:600">${e(k[0])}</span>`:''}${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}${w.map(hl).join('、')}</span></div>`}
+ return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${k[0]&&k[0]!=k[1]&&k[0]!=d?`<span style="display:block;font-weight:600">${e(k[0])}</span>`:''}${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}<span class="wsw"><span class="ws">${w.map(hl).join('、')}</span></span></span></div>`}
 function detail(n){anchor(n);if(ed)return form(n);dview(n)}
 function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
- const ro=i.w.filter(w=>D.groups[w]).map(g=>{const inner=treeH(g,(m,isG)=>`<span class="p${isG?' g':''}" data-w="${e(m)}">${e(m)}</span>`);return leaves(g).length>=GT?`<div class="ro"><b>${e(g)}</b></div>`+mtog(g,inner):`<div class="ro"><b>${e(g)}</b>${inner}</div>`}).join('');
+ const ro=i.w.filter(w=>D.groups[w]&&D.groups[w].length).map(g=>{const inner=treeH(g,(m,isG)=>`<span class="p${isG?' g':''}" data-w="${e(m)}">${e(m)}</span>`);return leaves(g).length>=GT?`<div class="ro"><b>${e(g)}</b></div>`+mtog(g,inner):`<div class="ro"><b>${e(g)}</b>${inner}</div>`}).join('');
  sheet(`${pre||xbtn()}<div class="gl">${e(i.g)}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px;white-space:pre-wrap">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function secInit(){document.querySelectorAll('#pn details.sec').forEach((d,x)=>{d.dataset.s=x;d.open=OS.has(x)})}
 document.addEventListener('toggle',ev=>{const d=ev.target;if(d.classList&&d.classList.contains('tg')&&d.dataset.id){d.open?NOPEN.add(d.dataset.id):NOPEN.delete(d.dataset.id)}if(d.classList&&d.classList.contains('sec')&&d.dataset.s!==undefined){const x=+d.dataset.s;d.open?OS.add(x):OS.delete(x)}},true);
@@ -602,11 +618,11 @@ function form(n){anchor(n);const i=D.items[n];
  <label>サブタイトル・内容（特典名・曲名など）</label><input id="qt">
  <label>日付（任意：放送回や公演日）</label><input type="date" id="qd">
  <label>出演者（任意・タップで選択）</label><div>${qchips(i)}</div><input id="qx" placeholder="名前を追加（カンマ区切り）" style="margin-top:6px">
- <label>画質（任意：この回だけ違う場合　例：1080p／720p／DVD画質）</label><input id="qq"><label>分数（任意：この回・この動画の長さ　例：45分）</label><input id="qm" placeholder="45分"><label>備考（任意）</label><input id="qn">
+ <label>画質（任意：この回だけ違う場合　例：1080p／720p／DVD画質）</label><input id="qq"><label>分数（任意：この回・この動画の長さ　例：45分）</label><input id="qm" placeholder="45分"><label>備考（任意・改行できます）</label><textarea id="qn" style="min-height:64px"></textarea>
  ${EK>=0&&i.k[EK]?`<p class="hint"><b>「${e(i.k[EK][0])}」を編集中です。</b>直して「この回を更新」を押してください。</p>`:''}<div class="row"><button class="on" data-a="qadd">${EK>=0?'この回を更新':'この回を追加'}</button>${EK>=0?'<button data-a="kcancel">編集をやめる</button>':''}</div></div></details>
-  <details class="mt"><summary>② 曲をまとめて追加（音源：シングル・アルバムの収録曲）</summary><div class="in"><p class="hint">①の「見出し」にシングル／アルバム名（必要なら「画質」も）を入れてから、曲名を1行に1曲ずつ貼り付けます。</p><label>曲名（1行に1曲）</label><textarea id="qb" placeholder="1曲目&#10;2曲目&#10;3曲目" style="min-height:96px"></textarea><div class="row"><button class="on" data-a="qbulk">曲を追加</button></div></div></details>
+  <details class="mt"><summary>② 改行でまとめて追加（話数・曲・特典映像など何でも）</summary><div class="in"><p class="hint">1行に1件ずつ貼り付けます。日付（2024/5/3・2024.5.3・2024年5月3日など）が入っている行は、自動で放送日・公演日として登録されます。見出しは①のチップで選ぶか、下の例のように【音源】【特典映像】と1行で書くと、その下の行から切り替わります（1回でシングルの音源と特典映像をまとめて入れられます）。画質（①の欄）は音源以外の行に付きます。</p><label>1行に1件</label><textarea id="qb" placeholder="【音源】&#10;1. 曲名A&#10;2. 曲名B&#10;【特典映像】&#10;MV 2024/5/3&#10;メイキング 2024年5月4日" style="min-height:120px"></textarea><div class="row"><button class="on" data-a="qbulk">まとめて追加</button></div></div></details>
  <details class="mt"><summary>③ 貼り付け・ファイルから追加（.csv / .md / .txt）</summary><div class="in"><p class="hint">1行1件の「題名|日付|見出し|内容」形式や、日付で始まるメモをそのまま貼り付けられます。</p><textarea id="qp" placeholder="ここに貼り付け" style="min-height:96px"></textarea><div class="row"><button class="on" data-a="qpaste">貼り付けた内容を追加</button><input type="file" id="kf" accept=".md,.txt,.csv" multiple hidden><button data-a="kf">ファイルを選ぶ</button></div></div></details>
- <details class="mt" ${KO?'open':''}><summary>登録済みの収録内容（${i.k.length}件）・削除</summary><div class="in" style="max-height:320px;overflow:auto">${klist2(i)}</div></details><details class="mt"><summary>全件をテキストで編集・貼り付け（上級者向け）</summary><div class="in"><textarea data-e="k">${e(i.k.map(k=>k.join('|')).join('\n'))}</textarea></div></details>
+ <details class="mt" ${KO?'open':''}><summary>登録済みの収録内容（${i.k.length}件）・削除</summary><div class="in" style="max-height:320px;overflow:auto">${klist2(i)}</div></details><details class="mt"><summary>全件をテキストで編集・貼り付け（上級者向け）</summary><div class="in"><textarea data-e="k">${e(i.k.map(k=>k.map(x=>String(x==null?'':x).replace(/\n/g,'\\n')).join('|')).join('\n'))}</textarea></div></details>
  </div></details><div class="row"><button data-a="dup" data-n="${n}">この項目を複製</button><button class="dng" data-a="del" data-n="${n}">この項目を削除</button></div></div>`);$('#pn').dataset.n=n;secInit();stTxt()}
 function filt(){const L=curL();if(!L)return;PQ='';
  const ws=Object.keys(D.groups),inG=new Set(ws.flatMap(g=>D.groups[g])),rest={};
@@ -625,7 +641,7 @@ function adminMenu(){
  <details class="mt"><summary>グループをテキストで編集（上級者向け）</summary><div class="in"><label>1行に1グループ　「グループ名：メンバー,メンバー」</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div></details></div>
  <div class="row"><button data-a="pm">出演者・グループを編集</button><button data-a="bk">バックアップ（JSON）を保存</button></div><p class="hint">変更したら画面上部の「保存」で反映されます。</p>`:'<p class="hint">編集モードにすると、各項目・必読・免責事項・お知らせを直接編集できます。</p>'}`}`)}
 const stl=()=>[...new Set([...Object.keys(D.groups).filter(g=>!D.groups[g].length),...soloList()])].sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
-const soloList=()=>[...new Set([...D.solo,...D.items.flatMap(i=>i.w.concat(epW(i)))])].filter(w=>!D.groups[w]&&!grpsOf(w).length).sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
+const soloList=()=>[...new Set([...D.solo,...D.items.flatMap(i=>i.w)])].filter(w=>!D.groups[w]&&!grpsOf(w).length).sort((a,b)=>cntW(b)-cntW(a)||a.localeCompare(b,'ja'));
 const klist2=i=>i.k.map((k,j)=>`<div class="row" style="margin:4px 0;align-items:center;flex-wrap:nowrap"><span style="flex:1;min-width:0;font-size:13px">${k[2]?`<small class="hint">${e(k[2])}　</small>`:''}${e(k[0])}${k[1]?` <small class="hint">${e(k[1])}</small>`:''}${k[3]?`<br><small class="hint">${e(k[3])}</small>`:''}</span><button data-a="kedit" data-j="${j}">編集</button><button class="dng" data-a="kdel" data-j="${j}" aria-label="削除">✕</button></div>`).join('')||'<p class="hint">まだありません</p>';
 let KO=false,EK=-1;const NOPEN=new Set();
 function renW(o,n){const U=a=>[...new Set(a.map(w=>w==o?n:w).filter(Boolean))];
@@ -681,7 +697,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='vguide')sheet(vguideH());
  else if(d.a=='pv')dview(+d.n,`<p style="text-align:right;margin:0"><button data-a="pvb" data-n="${d.n}">← 編集に戻る</button></p>`);else if(d.a=='pvb')form(+d.n);
  else if(d.a=='kf')$('#kf').click();
- else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();const wE=EK>=0;if(wE){i.k.splice(EK,1);EK=-1}mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),[ws.length?'出演者: '+ws.join(', '):'',$('#qq').value.trim()?'画質: '+$('#qq').value.trim():'',$('#qm').value.trim()?'分数: '+$('#qm').value.trim().replace(/^(\d+)$/,'$1分'):'',nt].filter(Boolean).join(' / ')]]);LK=ss;mk();rf(n);toast((tt||dt)+(wE?' を更新しました':' を追加しました'));{const q=$('#qe');if(q)q.focus({preventScroll:true})}}}else if(d.a=='jmp'){const el=document.querySelectorAll('#pn details.sec')[+d.s];if(el){el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'})}}else if(d.a=='sall'){document.querySelectorAll('#pn details.sec').forEach(a=>a.open=d.o=='1')}else if(d.a=='padd'){const n=+$('#pn').dataset.n,i=D.items[n],v=[$('#pnn').value.trim()].filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a);if(!i.w.includes(a))i.w.push(a)});touch();rf(n);toast(v.join('、')+' を追加しました')}}else if(d.a=='kdel'){const n=+$('#pn').dataset.n;D.items[n].k.splice(+d.j,1);KO=true;EK=-1;mk();rf(n)}else if(d.a=='pmaddp'){const v=[$('#pnp').value.trim()].filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a)});mk();render();perfMgr();toast('追加しました')}}else if(d.a=='pm'){perfMgr()}else if(d.a=='pmadd'){const v=$('#pnew').value.trim(),ms=[];if(!v)toast('グループ名を入れてください');else if(D.groups[v])toast('すでにあります');else{D.groups[v]=[...new Set(ms)];mk();render();perfMgr();toast(v+' を追加しました')}}else if(d.a=='madd'){const v=[x.closest('.lkrow').querySelector('[data-mi]').value.trim()].filter(Boolean);if(!v.length)toast('メンバー名を入れてください');else{const ok=v.filter(n=>!(D.groups[n]&&(n==d.xg||desc(n).has(d.xg))));if(ok.length<v.length)toast('そのグループは中に入れられません');D.groups[d.xg]=[...new Set([...D.groups[d.xg],...ok])];mk();render();perfMgr()}}else if(d.a=='gsub'){D.groups[d.xg]=[...new Set([...D.groups[d.xg],d.xm])];mk();render();perfMgr()}else if(d.a=='mdel'){D.groups[d.xg]=D.groups[d.xg].filter(m=>m!=d.xm);mk();render();perfMgr()}else if(d.a=='gdel'){if(confirm('グループ「'+d.xg+'」を削除しますか？（作品の出演者タグからも外れます。メンバー個人は残ります）')){renW(d.xg,'');mk();render();perfMgr()}}else if(d.a=='pmsave'){const c=[...document.querySelectorAll('#pn [data-pn]')].filter(x=>x.value.trim()!==x.dataset.pn);if(!c.length)toast('変更はありません');else if(confirm(c.length+'件の名前を変更・削除します。よろしいですか？')){c.forEach(x=>renW(x.dataset.pn,x.value.trim()));mk();render();perfMgr();toast('反映しました')}}else if(d.a=='qbulk'){const n=+$('#pn').dataset.n,i=D.items[n],ss=$('#qs').value.trim(),qq=$('#qq').value.trim(),ls=$('#qb').value.split('\n').map(a=>a.trim().replace(/^\d+[.．、)）]\s*/,'')).filter(Boolean);if(!ss)toast('見出し（シングル・アルバム名）を入れてください');else if(!ls.length)toast('曲名を入れてください');else{mergeK(i,ls.map(t=>[t,'',ss,qq?'画質: '+qq:'']));LK=ss;mk();rf(n);toast(ss+' に '+ls.length+'曲を追加しました')}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
+ else if(d.a=='qadd'){const n=+$('#pn').dataset.n,i=D.items[n],dt=$('#qd').value,tt=[$('#qe').value.trim(),$('#qt').value.trim()].filter(Boolean).join(' '),ss=$('#qs').value.trim();if(!dt&&!tt){toast('話数・内容・日付のどれかを入れてください')}else{$('#qx').value.split(/[,、，]/).map(a=>a.trim()).filter(Boolean).forEach(a=>QW.add(a));const ws=[...QW],nt=$('#qn').value.trim();const wE=EK>=0;if(wE){i.k.splice(EK,1);EK=-1}mergeK(i,[[tt||dt,dt,ss||(tt?'':'放送回'),[ws.length?'出演者: '+ws.join(', '):'',$('#qq').value.trim()?'画質: '+$('#qq').value.trim():'',$('#qm').value.trim()?'分数: '+$('#qm').value.trim().replace(/^(\d+)$/,'$1分'):'',nt].filter(Boolean).join(' / ')]]);LK=ss;mk();rf(n);toast((tt||dt)+(wE?' を更新しました':' を追加しました'));{const q=$('#qe');if(q)q.focus({preventScroll:true})}}}else if(d.a=='jmp'){const el=document.querySelectorAll('#pn details.sec')[+d.s];if(el){el.open=true;el.scrollIntoView({behavior:'smooth',block:'start'})}}else if(d.a=='sall'){document.querySelectorAll('#pn details.sec').forEach(a=>a.open=d.o=='1')}else if(d.a=='padd'){const n=+$('#pn').dataset.n,i=D.items[n],v=[$('#pnn').value.trim()].filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a);if(!i.w.includes(a))i.w.push(a)});touch();rf(n);toast(v.join('、')+' を追加しました')}}else if(d.a=='kdel'){const n=+$('#pn').dataset.n;D.items[n].k.splice(+d.j,1);KO=true;EK=-1;mk();rf(n)}else if(d.a=='pmaddp'){const v=[$('#pnp').value.trim()].filter(Boolean);if(!v.length)toast('名前を入れてください');else{v.forEach(a=>{if(!D.groups[a]&&!grpsOf(a).length&&!D.solo.includes(a))D.solo.push(a)});mk();render();perfMgr();toast('追加しました')}}else if(d.a=='pm'){perfMgr()}else if(d.a=='pmadd'){const v=$('#pnew').value.trim(),ms=[];if(!v)toast('グループ名を入れてください');else if(D.groups[v])toast('すでにあります');else{D.groups[v]=[...new Set(ms)];mk();render();perfMgr();toast(v+' を追加しました')}}else if(d.a=='madd'){const v=[x.closest('.lkrow').querySelector('[data-mi]').value.trim()].filter(Boolean);if(!v.length)toast('メンバー名を入れてください');else{const ok=v.filter(n=>!(D.groups[n]&&(n==d.xg||desc(n).has(d.xg))));if(ok.length<v.length)toast('そのグループは中に入れられません');D.groups[d.xg]=[...new Set([...D.groups[d.xg],...ok])];mk();render();perfMgr()}}else if(d.a=='gsub'){D.groups[d.xg]=[...new Set([...D.groups[d.xg],d.xm])];mk();render();perfMgr()}else if(d.a=='mdel'){D.groups[d.xg]=D.groups[d.xg].filter(m=>m!=d.xm);mk();render();perfMgr()}else if(d.a=='gdel'){if(confirm('グループ「'+d.xg+'」を削除しますか？（作品の出演者タグからも外れます。メンバー個人は残ります）')){renW(d.xg,'');mk();render();perfMgr()}}else if(d.a=='pmsave'){const c=[...document.querySelectorAll('#pn [data-pn]')].filter(x=>x.value.trim()!==x.dataset.pn);if(!c.length)toast('変更はありません');else if(confirm(c.length+'件の名前を変更・削除します。よろしいですか？')){c.forEach(x=>renW(x.dataset.pn,x.value.trim()));mk();render();perfMgr();toast('反映しました')}}else if(d.a=='qbulk'){const n=+$('#pn').dataset.n,i=D.items[n],ss=$('#qs').value.trim(),a=parseB($('#qb').value,ss,$('#qq').value.trim());if(!a.length)toast('1行に1件ずつ入れてください');else{mergeK(i,a);const hs=[...new Set(a.map(k=>k[2]).filter(x=>x&&x!='放送回'))],nd=a.filter(k=>k[1]).length;LK=hs.length==1?hs[0]:ss;KO=true;mk();rf(n);toast(a.length+'件を追加しました'+(nd?'（日付'+nd+'件）':''))}}else if(d.a=='kmore'){KL+=200;$('#kl').innerHTML=klist(D.items[KI])}else if(d.a=='sh')shareL();else if(d.a=='shk')shareK();else if(d.a=='ins')inst();
  else if(d.a=='rs'){f={q:'',g:[],w:[],o:[]};filt()}
  else if(d.a=='ed')toggleEd();
  else if(d.a=='li')login();
@@ -728,6 +744,8 @@ document.addEventListener('change',async t=>{if(t.target.id!='kf')return;const n
 addEventListener('beforeinstallprompt',t=>{t.preventDefault();DP=t});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 init();
+
+(function(){const chk=r=>{(r||document).querySelectorAll('.wsw').forEach(w=>{const s=w.firstElementChild;w.classList.toggle('more',s.scrollWidth>s.clientWidth+2&&s.scrollLeft+s.clientWidth<s.scrollWidth-2)})};let T;new MutationObserver(()=>{clearTimeout(T);T=setTimeout(()=>chk(),50)}).observe(document.body||document.documentElement,{childList:true,subtree:true});document.addEventListener('scroll',ev=>{const t=ev.target;if(t&&t.classList&&t.classList.contains('ws'))chk(t.parentNode)},true);addEventListener('resize',()=>chk())})();
 </script>
 </body>
 </html>
