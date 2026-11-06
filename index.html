@@ -482,7 +482,7 @@ function pSearch(){
  <div class="sq"><input id="lq" type="search" enterkeyhint="search" autocomplete="off" placeholder="題名・出演者・内容で検索" value="${e(f.q)}"><button type="button" data-a="flt">絞り込み</button></div><div id="lb">${lbody(SS,1)}</div>`}
 const linkU=u=>{u=String(u||'').trim();if(/^https?:\/\//i.test(u))return u;if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(u))return'https://'+u;return''};
 const dlH=(i,show)=>{const a=(i.dl||[]).map(l=>({t:l.t,u:linkU(l.u)})).filter(l=>l.u);
- return show&&a.length?`<div class="dlb" style="margin:10px 0">${a.map(l=>`<a class="dlk" href="${e(l.u)}" target="_blank" rel="noopener noreferrer"><b>${e(l.t||'リンク')}</b><span aria-hidden="true">↗</span></a>`).join('')}</div>`:''};
+ return show&&a.length?`<div class="dlb" style="margin:10px 0;display:block">${a.map(l=>`<a class="dlk elk" href="${e(l.u)}" target="_blank" rel="noopener noreferrer"><b>${e(l.t||'リンク')}</b><span aria-hidden="true">↗</span></a>`).join('')}</div>`:''};
 function ppHtml(){const ch=(v,t)=>`<button type="button" class="chip ${f.w.includes(v)?'on':''}" data-t="w|${e(v)}">${e(t||v)}<i>${cntW(v)}</i></button>`;
  const gs=Object.keys(D.groups),inG=new Set(gs.flatMap(g=>D.groups[g])),solo=stl();
  const sel=f.w.length?`<div class="ch" style="margin:0 0 8px">${f.w.map(w=>`<span data-t="w|${e(w)}">${e(w)} ✕</span>`).join('')}</div>`:'';
@@ -597,7 +597,7 @@ const kh=(k,g)=>{const sp=splitM(k[3]),d=k[1]||k[0],m=sp.m,w=/^出演者[:：]/.
  const hit=q.some(t=>w.some(n=>n.toLowerCase().includes(t))),cast=w.length>CT?`<details class="wd"${hit?' open':''}><summary><span class="wc">出演者 ${w.length}名</span><span class="wp">${w.slice(0,3).map(e).join('、')} ほか</span></summary>${w.map(hl).join('、')}</details>`:w.map(hl).join('、');
  return`<div class="ep"><span class="d">${e(d.replace(/-/g,'.'))}</span><span class="w">${k[0]&&k[0]!=k[1]&&k[0]!=d?`<span style="display:block;font-weight:600">${e(k[0])}</span>`:''}${m.filter(Boolean).map(x=>`<span class="b">${e(x)}</span>`).join('')}${cast}${lkH(sp.lk)}</span></div>`}
 function detail(n){anchor(n);if(ed)return form(n);dview(n)}
-function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KP='';KPRE=!!pre;KQ=f.q||(f.w.length==1&&!D.groups[f.w[0]]?f.w[0]:'');
+function dview(n,pre){const i=D.items[n];KI=n;KL=80;QW=new Set();KP='';KPRE=!!pre;KQ='';
  const ro=i.w.filter(w=>D.groups[w]&&D.groups[w].length).map(g=>{const inner=treeH(g,(m,isG)=>`<span class="p${isG?' g':''}" data-w="${e(m)}">${e(m)}</span>`);return leaves(g).length>=GT?`<div class="ro"><b>${e(g)}</b></div>`+mtog(g,inner):`<div class="ro"><b>${e(g)}</b>${inner}</div>`}).join('');
  sheet(`${pre||xbtn()}${pre?'':`<div class="stk">${nvr(n,1)}</div>`}<div class="gl">${e(gOf(i).join('・'))}</div><h2>${e(i.t)}</h2>${tags(i)}${ro}${dinfo(i)}${dlH(i,(VW&&!SHK)||pre)}${i.n?`<p class="hint" style="font-size:13px;white-space:pre-wrap">${e(i.n)}</p>`:''}${i.k.length?kbox(i):''}`)}
 function secInit(){document.querySelectorAll('#pn details.sec').forEach((d,x)=>{d.dataset.s=x;d.open=OS.has(x)})}
