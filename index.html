@@ -63,6 +63,7 @@ h4{font-size:12px;letter-spacing:.16em;color:var(--mu);margin:22px 0 6px;font-we
 .p{display:inline-block;border:1px solid var(--mu);padding:0 8px;font-size:12px;margin:3px 4px 2px 0;cursor:pointer;line-height:1.7}
 .p.g{border-color:var(--fg);font-weight:700}
 .wor{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--bd,var(--ln));border-radius:10px;padding:4px 6px 4px 12px;margin:0 0 6px}.wor button{min-height:34px;min-width:40px;padding:0 8px;margin-left:4px}
+a.dlk.elk{display:inline-flex;justify-content:flex-start;gap:5px;padding:2px 12px;border-radius:999px;margin:6px 6px 0 0;font-size:13px;line-height:1.7;min-height:0}a.dlk.elk b{display:inline;font-size:13px;font-weight:600;border:0}a.dlk.elk span{font-size:12px}
 .wd{display:block}.wd summary{cursor:pointer;list-style:none;font-size:13px}.wd summary::-webkit-details-marker{display:none}.wd summary::after{content:' ▾';color:var(--mu)}.wd[open] summary::after{content:' ▴'}.wd .wc{font-weight:600}.wd .wp{color:var(--mu);margin-left:8px}.wd[open] .wp{display:none}.wd[open] summary{margin-bottom:2px}
 .k small,.ep .b{white-space:pre-wrap}.b{display:inline-block;border:1px solid var(--fg);font-size:10px;padding:0 5px;margin-left:6px;line-height:1.5;vertical-align:1px}
 .pg{white-space:pre-wrap;word-break:break-word}
@@ -588,7 +589,7 @@ const unsh=()=>{if(history.state&&history.state.sh)history.replaceState(null,'')
 addEventListener('popstate',()=>{if($('#sh').className)shut()});
 const xbtn=t=>`<p style="text-align:right;margin:0"><button data-a="cl">${t||'閉じる'}</button></p>`;
 const splitM=t=>{const lk=[],m=(t||'').split(' / ').filter(a=>{const z=a.match(/^リンク[:：]\s*(?:(.*?)\s+)?(\S+)$/);if(z&&linkU(z[2])){lk.push({t:(z[1]||'').trim(),u:linkU(z[2])});return false}return true});return{m,lk}};
-const lkH=a=>a.length&&(SHL||KPRE)?`<span style="display:block;margin-top:6px">${a.map((l,x)=>`<a class="dlk" style="margin-top:6px" href="${e(l.u)}" target="_blank" rel="noopener noreferrer"><b>${e(l.t||(a.length>1?'リンク'+(x+1):'リンクを開く'))}</b><span aria-hidden="true">↗</span></a>`).join('')}</span>`:'';
+const lkH=a=>a.length&&(SHL||KPRE)?`<span style="display:block;margin-top:6px">${a.map((l,x)=>`<a class="dlk elk" href="${e(l.u)}" target="_blank" rel="noopener noreferrer"><b>${e(l.t||(a.length>1?'リンク'+(x+1):'リンクを開く'))}</b><span aria-hidden="true">↗</span></a>`).join('')}</span>`:'';
 const lkParse=v=>{const parts=[];let bad=false;String(v||'').split(/\r?\n/).map(a=>a.trim()).filter(Boolean).forEach(l=>{const z=l.match(/^(?:(.*?)[\s\u3000]+)?(\S+)$/),u=z&&linkU(z[2]);if(!u){bad=true;return}const t=(z[1]||'').replace(/\s*\/\s*/g,' ').trim();parts.push('リンク: '+(t?t+' ':'')+u)});return{bad,parts}};
 const kh=(k,g)=>{const sp=splitM(k[3]),d=k[1]||k[0],m=sp.m,w=/^出演者[:：]/.test(m[0])?m.shift().replace(/^出演者[:：]\s*/,'').split(/[,、，]\s*/):null;
  if(!w||!DR.test(d))return`<div class="k">${e(k[0])}<small>${[k[1]==k[0]?'':k[1],g?'':k[2],m.join(' / ')].filter(Boolean).map(e).join(' ・ ')}</small>${lkH(sp.lk)}</div>`;
