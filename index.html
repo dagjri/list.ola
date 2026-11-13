@@ -552,7 +552,7 @@ function pPeople(){
 const rowH=(i,n)=>`<div class="r${SM&&ed?' smode':''}${SM&&ed&&SELO.has(i)?' sel':''}" data-i="${n}" role="button" tabindex="0">${SM&&ed?`<span class="ck${SELO.has(i)?' on':''}"></span>`:''}${VW?'':`<button class="fv" data-fv="${n}" aria-label="お気に入り">${isF(i)?'★':'☆'}</button>`}<div class="tt">${e(i.t)}${i.n.startsWith('【NEW】')?'<span class="b">NEW</span>':''}${i.l=='have'&&i.o&&!VW?`<span class="b ${i.o=='配布可'?'ok':i.o=='配布不可'?'ng':''}">${e(i.o)}</span>`:''}${i.l=='want'&&i.p?`<span class="b${i.p=='激求め'?' hot':''}">${e(i.p)}</span>`:''}</div><div class="wsw"><div class="ws">${tags(i)}</div></div>${exB(i)}${hitK(i)?`<div class="m">${hitK(i)}</div>`:''}</div>`;
 const lpH=(i,n)=>`<div class="hint" style="margin:0">プレビュー（一覧での見え方）</div>${rowH(i,n)}${dinfo(i)}`;
 function lbody(k,srch){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&gOf(i).some(g=>L.g.includes(g)));
- const tabs=[...new Set(['すべて',...L.g,'New'])];if(!tabs.includes(tab))tab='すべて';
+ const tabs=[...new Set(['すべて','New',...L.g])];if(!tabs.includes(tab))tab='すべて';
  const mm=D.items.filter(i=>match(i,L,false));
  const none=srch&&!f.q.trim()&&!f.g.length&&!f.w.length&&!f.o.length;
  let rows=none?[]:D.items.map((x,n)=>[x,n]).filter(([i])=>match(i,L,true));
