@@ -785,15 +785,18 @@ function nxZip(files){const te=new TextEncoder(),T=(()=>{const t=[];for(let n=0;
 function nxCsv(){const{A,gs}=nxData(),q=t=>'"'+String(t==null?'':t).replace(/"/g,'""')+'"',H=['タイトル','ジャンル','出演者','画質','配布可否','配布方法','メモ','収録件数','収録内容','リンク'];
  const rows=[];gs.forEach(g=>A.filter(i=>i.g==g).forEach(i=>rows.push([i.t,g,i.w.join(', '),i.q||'',i.o||'',i.m||'',nxCl(i.n),i.k.length,nxKs(i).join('\n'),NX.l?nxLinks(i).map(l=>l.u).join('\n'):''])));
  return'﻿'+[H,...rows].map(r=>r.map(q).join(',')).join('\r\n')}
-const nxOut=()=>NX.f=='csv'?nxCsv():NX.f=='zip'?nxTop():nxMd();
+const nxOut=()=>NX.f=='csv'?nxCsv():(NX.f=='zip'||NX.f=='each')?nxTop():nxMd();
+const nxEach=()=>nxFiles().map(([n,t],x)=>[x,n.replace(/\.md$/,'').split('/').pop(),t]);
+async function nxCopyT(t){let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(x){}if(!ok){const el=$('#nxo');if(el){try{const ro=el.readOnly;el.readOnly=false;el.value=t;el.focus();el.setSelectionRange(0,t.length);ok=document.execCommand('copy');el.readOnly=ro;nxUp()}catch(x){}}}toast(ok?'コピーしました。Notionの子ページに貼り付けてください':'コピーできませんでした')}
 function nxSheet(){const ck=(k,t)=>`<label style="display:flex;align-items:center;gap:8px;margin:6px 0;color:inherit;font-size:14px"><input type="checkbox" data-nx="${k}" ${NX[k]?'checked':''} style="width:auto;min-height:0"> ${t}</label>`;
- sheet(`${xbtn()}<h2>Notionにまとめる</h2><p class="hint" style="line-height:1.8"><b>スマホ（おすすめ）</b>：「1ページに貼り付け」を選んで「コピー」→ Notionの新しいページに貼り付けると、お知らせ・必読・ジャンルごとの一覧が見出し付きでまとまります。<br><b>PC</b>：「ジャンルごとのページ（ZIP）」を保存し、Notionの「設定 → インポート → テキスト＆Markdown」で選ぶと、ジャンルごとに別ページになります（スマホのアプリではZIPを取り込めません）。<br><b>CSV</b>：Notionの「インポート → CSV」でデータベースになります。</p>
- <div class="row"><button data-nxf="md" class="${NX.f=='md'?'on':''}">1ページに貼り付け（スマホ向け）</button><button data-nxf="zip" class="${NX.f=='zip'?'on':''}">ジャンルごとのページ（ZIP・PC向け）</button><button data-nxf="csv" class="${NX.f=='csv'?'on':''}">CSV（データベース）</button></div>
+ sheet(`${xbtn()}<h2>Notionにまとめる</h2><p class="hint" style="line-height:1.8"><b>スマホで別ページにしたい</b>：「ジャンルごとに1つずつコピー」を選び、まずトップの内容をNotionに貼り、その中で「/ページ」で子ページを作って名前を付け、下の一覧から該当ジャンルの「コピー」→ 子ページに貼り付けます。<br><b>1ページにまとめる</b>：「1ページに貼り付け」を選んで「コピー」→ Notionの新しいページに貼り付けると、お知らせ・必読・ジャンルごとの一覧が見出し付きでまとまります。<br><b>PC</b>：「ジャンルごとのページ（ZIP）」を保存し、Notionの「設定 → インポート → テキスト＆Markdown」で選ぶと、ジャンルごとに別ページになります（スマホのアプリではZIPを取り込めません）。<br><b>CSV</b>：Notionの「インポート → CSV」でデータベースになります。</p>
+ <div class="row"><button data-nxf="md" class="${NX.f=='md'?'on':''}">1ページに貼り付け（スマホ向け）</button><button data-nxf="each" class="${NX.f=='each'?'on':''}">ジャンルごとに1つずつコピー（スマホ向け）</button><button data-nxf="zip" class="${NX.f=='zip'?'on':''}">ジャンルごとのページ（ZIP・PC向け）</button><button data-nxf="csv" class="${NX.f=='csv'?'on':''}">CSV（データベース）</button></div>
  ${ck('x','お知らせ・必読・求めリスト・利用上の注意もページにする（ZIPのみ）')}${ck('p','出演者')}${ck('q','画質')}${ck('o','配布可否・配布方法')}${ck('n','メモ')}${ck('k','収録内容（作品の下にぶら下げて表示）')}${ck('l','共有リンク（Notionを他人に共有する場合は注意）')}
+ <div id="nxe"></div>
  <textarea id="nxo" readonly style="width:100%;min-height:36vh;margin-top:8px;font-size:12px;line-height:1.5"></textarea><p class="hint" id="nxc"></p>
  <div class="row"><button class="on" data-a="nxcp">コピー</button><button data-a="nxdl">ファイルで保存</button></div>
  <p class="hint">Notionへ自動で書き込む機能は、この公開サイト単体では安全に作れないため、貼り付け／取り込み方式にしています。</p>`);nxUp()}
-function nxUp(){const t=nxOut(),el=$('#nxo');if(!el)return;el.value=t;$('#nxc').textContent=NX.f=='zip'?'↑一番上のページの中身（各ジャンルは別ページになります：'+nxGroups().G.length+'ページ）':t.length.toLocaleString()+'文字';document.querySelectorAll('[data-nxf]').forEach(b=>b.classList.toggle('on',b.dataset.nxf==NX.f));document.querySelectorAll('[data-nx]').forEach(c=>{if(NX.f=='csv'&&['p','q','o','n'].includes(c.dataset.nx)){c.disabled=true;c.parentNode.style.opacity=.5}else{c.disabled=false;c.parentNode.style.opacity=1}})}
+function nxUp(){const t=nxOut(),el=$('#nxo');if(!el)return;const ne=$('#nxe');if(ne)ne.innerHTML=NX.f=='each'?'<p class="hint">タップでそのページの中身をコピーします（上のトップページ＝最初の行）。</p>'+nxEach().map(a=>`<div class="row" style="margin:4px 0;align-items:center"><span style="flex:1;min-width:0">${e(a[1])}</span><button data-nxe="${a[0]}">コピー</button></div>`).join(''):'';el.value=t;$('#nxc').textContent=NX.f=='each'?'↑トップページの中身':NX.f=='zip'?'↑一番上のページの中身（各ジャンルは別ページになります：'+nxGroups().G.length+'ページ）':t.length.toLocaleString()+'文字';document.querySelectorAll('[data-nxf]').forEach(b=>b.classList.toggle('on',b.dataset.nxf==NX.f));document.querySelectorAll('[data-nx]').forEach(c=>{if(NX.f=='csv'&&['p','q','o','n'].includes(c.dataset.nx)){c.disabled=true;c.parentNode.style.opacity=.5}else{c.disabled=false;c.parentNode.style.opacity=1}})}
 async function nxCopy(){const t=(NX.f=='csv'?nxCsv():nxMd()).replace(/^﻿/,''),el=$('#nxo');let ok=false;
  try{await navigator.clipboard.writeText(t);ok=true}catch(x){}
  if(!ok&&el){try{const ro=el.readOnly;el.readOnly=false;el.value=t;el.focus();el.setSelectionRange(0,t.length);ok=document.execCommand('copy');el.readOnly=ro;nxUp()}catch(x){}}
@@ -903,7 +906,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='pw'){em=$('#em').value.trim();x.disabled=true;x.textContent='確認中…';try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else{let m='';try{const j=await r.json();m=j.error_description||j.msg||j.message||j.error||''}catch(z){}alert('ログインできません（'+r.status+'）'+(m?'\n'+m:''))}}catch(z){alert('通信に失敗しました')}if(x.isConnected){x.disabled=false;x.textContent='ログイン'}}
  else if(d.a=='lo'){out();closeSheet();render()}
  else if(d.a=='txt'){if(!VW)txtSheet()}
- else if(d.a=='nx')nxSheet();else if(d.nxf!==undefined){NX.f=d.nxf;nxUp()}else if(d.nx!==undefined){NX[d.nx]=x.checked;nxUp()}else if(d.a=='nxcp')nxCopy();else if(d.a=='nxdl')nxDl();else if(d.a=='txcp')txtCopy()
+ else if(d.a=='nx')nxSheet();else if(d.nxf!==undefined){NX.f=d.nxf;nxUp()}else if(d.nx!==undefined){NX[d.nx]=x.checked;nxUp()}else if(d.nxe!==undefined){const a=nxEach()[+d.nxe];if(a)nxCopyT(a[2])}else if(d.a=='nxcp')nxCopy();else if(d.a=='nxdl')nxDl();else if(d.a=='txcp')txtCopy()
  else if(d.a=='txdl')txtDl()
  else if(d.txl!==undefined){TXO.w=d.txl=='1';txtSheet()}
  else if(d.tx!==undefined){TXO[d.tx]=x.checked;txtUp()}
