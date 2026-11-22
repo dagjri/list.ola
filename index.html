@@ -850,10 +850,11 @@ let PM={v:'l',n:'',t:'all',sel:false,ck:new Set(),q:'',nw:false,nt:'p',lv:''};
 const pgAll=()=>[...new Set([...Object.keys(D.groups),...Object.values(D.groups).flat(),...(D.solo||[]),...D.items.flatMap(i=>i.w)])].filter(Boolean),
 pgIsG=n=>!!D.groups[n],pgC=n=>{try{return cntW(n)}catch(x){return 0}},
 pgSplit=t=>[...new Set(String(t||'').split(/[\n,、，]/).map(a=>a.trim()).filter(Boolean))],
-pgRows=()=>{const all=pgAll(),pin=D.pin||[],q=PM.q.trim().toLowerCase();
+pgNames=()=>{const all=pgAll(),pin=D.pin||[],q=PM.q.trim().toLowerCase();
  const q0=PM.q.trim(),ind=n=>!pgIsG(n)&&(!grpsOf(n).length||pin.includes(n)),vis=n=>pgIsG(n)||q0||ind(n);let r=all.filter(n=>PM.t=='g'?pgIsG(n):PM.t=='p'?(q0?!pgIsG(n):ind(n)):PM.t=='pin'?pin.includes(n):vis(n));
  if(q)r=r.filter(n=>n.toLowerCase().includes(q)||(pgIsG(n)&&D.groups[n].some(m=>m.toLowerCase().includes(q))));
- r.sort((a,b)=>(pgIsG(b)-pgIsG(a))||CO.compare(a,b));
+ r.sort((a,b)=>(pgIsG(b)-pgIsG(a))||CO.compare(a,b));return r},
+pgRows=()=>{const pin=D.pin||[],r=pgNames();
  if(!r.length)return'<p class="hint" style="padding:14px 4px">見つかりません</p>';
  return r.map(n=>{const g=pgIsG(n),ps=grpsOf(n),sub=g?`グループ ・ ${leaves(n).length}名 ・ ${pgC(n)}件`:`個人${ps.length?' ・ '+ps.map(e).join('、'):''}${pin.includes(n)?' ・個人表示':''} ・ ${pgC(n)}件`;
   return`<button class="pmr${PM.sel&&PM.ck.has(n)?' on':''}" data-a="${PM.sel?'pgck':'pgo'}" data-xn="${e(n)}"><b>${PM.sel?(PM.ck.has(n)?'☑ ':'☐ '):''}${e(n)}${g?' <i style="font-style:normal;font-size:11px;border:1px solid currentColor;padding:0 4px">G</i>':''}</b><small>${sub}</small></button>`}).join('')},
@@ -866,7 +867,7 @@ pgList=()=>{const all=pgAll(),pin=D.pin||[],nG=all.filter(pgIsG).length,nI=all.f
  return`<div class="fg"><div class="pgh"><button data-a="cl">閉じる</button><b>出演者・グループ</b><button data-a="pgsel" class="${PM.sel?'on':''}">${PM.sel?'選択をやめる':'選択'}</button></div>
  <div style="position:sticky;top:44px;background:var(--bg);z-index:2;padding-bottom:6px"><input id="pgq" type="search" placeholder="名前で絞り込み" value="${e(PM.q)}" autocomplete="off" style="width:100%"><div style="margin-top:6px">${tb('all','すべて',nG+nI)}${tb('g','グループ',nG)}${tb('p','個人',nI)}${tb('pin','個人表示の指定',pin.length)}</div></div>
  <div class="row" style="margin:6px 0"><button class="on" data-a="pgnw">＋ 追加</button></div>${nf}<div id="pgl">${pgRows()}</div>${bar}</div>`},
-pgEdit=()=>{const n=PM.n,g=pgIsG(n),gs=Object.keys(D.groups).sort((a,b)=>CO.compare(a,b)),pin=(D.pin||[]).includes(n),head=`<div class="pgh"><button data-a="pgb">‹ 一覧</button><b>${g?'グループ':'個人'}</b><button class="dng" data-a="pgdel" data-xn="${e(n)}">削除</button></div><label>名前（書き換えて入力欄から離れるとすぐ反映）</label><input data-pgn="${e(n)}" value="${e(n)}" style="font-weight:700;width:100%">`,cnt=`<p class="hint">この名前が付いた作品：所持 ${pgC(n)}件</p>`;
+pgEdit=()=>{const n=PM.n,g=pgIsG(n),gs=Object.keys(D.groups).sort((a,b)=>CO.compare(a,b)),pin=(D.pin||[]).includes(n),ord=pgNames(),ix=ord.indexOf(n),nv=ix<0?'':`<button data-a="pgnv" data-v="-1" ${ix<1?'disabled':''} aria-label="前へ">‹ 前</button><button data-a="pgnv" data-v="1" ${ix>=ord.length-1?'disabled':''} aria-label="次へ">次 ›</button>`,head=`<div class="pgh"><button data-a="pgb">一覧</button>${nv}<b>${g?'グループ':'個人'}${ix>=0?' '+(ix+1)+'/'+ord.length:''}</b><button class="dng" data-a="pgdel" data-xn="${e(n)}">削除</button></div><label>名前（書き換えて入力欄から離れるとすぐ反映）</label><input data-pgn="${e(n)}" value="${e(n)}" style="font-weight:700;width:100%">`,cnt=`<p class="hint">この名前が付いた作品：所持 ${pgC(n)}件</p>`;
  const mk2=(m,x)=>`<span class="pmg"><button class="chip" data-a="pgo" data-xn="${e(m)}">${e(m)}${D.groups[m]?'（G）':''}</button><button class="chip" aria-label="外す" data-a="pgrm" data-xg="${e(n)}" data-xm="${e(m)}">✕</button></span>`;
  if(g){const ms=D.groups[n],par=gs.filter(p=>p!=n&&!desc(n).has(p)),inP=gs.filter(p=>p!=n&&D.groups[p].includes(n)),cand=gs.filter(p=>p!=n&&!ms.includes(p)&&!desc(p).has(n));
   return`<div class="fg">${head}${cnt}<label>読み仮名（並び替え用・画面には出ません）</label><input data-pgy="${e(n)}" value="${e((D.gy&&D.gy[n])||'')}" placeholder="${e(GYD[n.trim()]||'例：かとぅーん')}" style="width:100%"><p class="hint">グループの並び順は「なにわ男子 → SixTONES → 読み仮名の五十音順」です。空なら名前で並べます。</p><div class="row"><button data-a="pgaf" class="${(D.afg||[]).includes(n)?'on':''}">${(D.afg||[]).includes(n)?'メンバーを畳んで表示：オン':'メンバーを畳んで表示：オフ'}</button></div>
@@ -889,7 +890,7 @@ function pgDedupe(){if(VW||!D)return false;let ch=false;const by=new Map();pgAll
  const a=(D.solo||[]).length+(D.pin||[]).length;D.solo=(D.solo||[]).filter(n=>!D.groups[n]&&!Object.values(D.groups).some(m=>m.includes(n)));D.pin=(D.pin||[]).filter(n=>!D.groups[n]);if(a!=D.solo.length+D.pin.length)ch=true;return ch}
 const pgDone=()=>{pgDedupe();mk();render();perfMgr()};
 function pgAct(d,x){const a=d.a;
- if(a=='pgo'){PM.v='e';PM.n=d.xn;perfMgr()}else if(a=='pgb'){PM.v='l';perfMgr()}
+ if(a=='pgo'){PM.v='e';PM.n=d.xn;perfMgr()}else if(a=='pgb'){PM.v='l';perfMgr()}else if(a=='pgnv'){const o=pgNames(),i=o.indexOf(PM.n)+ +d.v;if(i>=0&&i<o.length){PM.n=o[i];perfMgr()}}
  else if(a=='pgt'){PM.t=d.v;perfMgr()}else if(a=='pgsel'){PM.sel=!PM.sel;PM.ck=new Set();perfMgr()}
  else if(a=='pgck'){PM.ck.has(d.xn)?PM.ck.delete(d.xn):PM.ck.add(d.xn);const y=$('#pn').scrollTop;perfMgr();$('#pn').scrollTop=y}
  else if(a=='pgnw'){PM.nw=!PM.nw;perfMgr()}else if(a=='pgnt'){PM.nt=d.v;perfMgr()}
