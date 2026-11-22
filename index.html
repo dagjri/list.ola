@@ -398,10 +398,10 @@ function hitK(i){const q=f.q.toLowerCase().split(/\s+/).filter(Boolean),ws=wsF()
 let QW=new Set();
 const knownN=()=>{const k=new Set([...Object.keys(D.groups),...(D.solo||[])]);Object.values(D.groups).forEach(a=>a.forEach(m=>k.add(m)));return k};
 const MAING=['なにわ男子','SixTONES'],OTHL='なにわ男子とSixTONES以外';
-function perfSecs(){const gk=Object.keys(D.groups),main=MAING.map(m=>gk.find(g=>g.trim()==m)).filter(Boolean),ms=new Set(main.flatMap(g=>[g,...leaves(g)])),oth=gk.filter(g=>!main.includes(g)),ppl=new Set();oth.forEach(g=>leaves(g).forEach(m=>ppl.add(m)));[...(D.solo||[]),...soloList()].forEach(m=>ppl.add(m));ms.forEach(m=>ppl.delete(m));const srt=a=>[...a].sort((x,y)=>CO.compare(x,y));return{main,gOth:srt(oth),ppl:srt(ppl)}}
+function perfSecs(){const gk=Object.keys(D.groups),main=MAING.map(m=>gk.find(g=>g.trim()==m)).filter(Boolean),ms=new Set(main.flatMap(g=>[g,...leaves(g)])),oth=gk.filter(g=>!main.includes(g)&&!main.some(m=>desc(m).has(g))),ppl=new Set();oth.forEach(g=>leaves(g).forEach(m=>ppl.add(m)));[...(D.solo||[]),...soloList()].forEach(m=>ppl.add(m));ms.forEach(m=>ppl.delete(m));const srt=a=>[...a].sort((x,y)=>CO.compare(x,y));return{main,gOth:srt(oth),ppl:srt(ppl)}}
 let PKO=false;document.addEventListener('toggle',t=>{if(t.target.classList&&t.target.classList.contains('pko'))PKO=t.target.open},true);
 function perfPick(ch,o){o=o||{};const S=perfSecs(),hd=t=>`<div class="hint" style="margin:12px 0 4px;font-weight:700">${e(t)}</div>`,sh=t=>`<div class="hint" style="margin:8px 0 3px;font-size:12px">${e(t)}</div>`;let h='';
- S.main.forEach(g=>{h+=hd(g)+'<div>'+(o.grp?ch(g,g+'（全員）'):'')+leaves(g).map(m=>ch(m)).join('')+'</div>'});
+ S.main.forEach(g=>{const sg=[...desc(g)].filter(m=>D.groups[m]);h+=hd(g)+'<div>'+(o.grp?ch(g,g+'（全員）')+sg.map(m=>ch(m,m+'（全員）')).join(''):'')+leaves(g).map(m=>ch(m)).join('')+'</div>'});
  const ex=(o.extra||[]).filter(m=>!S.ppl.includes(m)&&!S.gOth.includes(m)&&!S.main.some(g=>g==m||leaves(g).includes(m))&&!D.groups[m]),ppl=[...new Set([...S.ppl,...ex])].sort((x,y)=>CO.compare(x,y));
  let oh='';if(o.grp&&S.gOth.length)oh+=sh('グループ（五十音順）')+'<div>'+S.gOth.map(g=>ch(g,g+'（全員）')).join('')+'</div>';
  oh+=sh('個人（五十音順）')+'<div>'+(ppl.map(m=>ch(m)).join('')||'<span class="hint">まだいません</span>')+'</div>';const sc=o.on?[...S.gOth,...ppl].filter(o.on).length:0;h+=`<details class="mt pko"${PKO?' open':''}><summary>${e(OTHL)}${sc?'・選択中 '+sc:''}</summary><div class="mb">${oh}</div></details>`;return h}
