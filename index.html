@@ -741,6 +741,20 @@ function txtAll(){const W=TXO.w,LK=W?'want':'have',L=LISTS[LK],A=D.items.filter(
    if(TXO.n){const m=String(i.n||'').replace(/^【NEW】\s*/,'').replace(/\s*\n\s*/g,' ').trim();if(m)o+='　※'+m+'\n'}
    if(TXO.k)i.k.forEach(k=>{const a=k[0]||'',b=k[1]||'';if(a||b)o+='　- '+(b&&b!=a?(a?a+'（'+b+'）':b):a)+'\n'})})});
  return o}
+let DTQ='',DTM='';
+const dtNk=t=>String(t).normalize('NFKC').replace(/【NEW】/gi,'').replace(/[\s\u3000「」『』【】\[\]()（）"'“”・、,.。！!？?～~\-－—]/g,'').toLowerCase();
+function dtSheet(){sheet(`<div class="fsc">${xbtn()}<h2>日付をまとめて入れる</h2><p class="hint">1行に「タイトル　年月日」を書いて「反映」を押すと、同じタイトルの作品に日付が入ります（すでに入っている日付は上書き）。日付は 2024/5/1・2024.5.1・2024年5月1日 などで書けます。見つからなかった行だけ、この画面に残ります。</p><textarea id="dtq" rows="10" placeholder="例：\nタイトルA　2024/5/1\nタイトルB 2023.12.24" style="width:100%">${e(DTQ)}</textarea><div class="row"><button class="on" data-a="dtgo">反映</button></div><div id="dtm" class="hint" style="white-space:pre-wrap;line-height:1.7">${e(DTM)}</div></div>`)}
+function dtGo(){const ta=$('#dtq'),lines=ta.value.split(/\n/),keep=[],notes=[];let ok=0,total=0;
+ const idx=D.items.map(i=>[i,dtNk(i.t)]);
+ lines.forEach(L=>{const raw=L.trim();if(!raw)return;total++;const m=raw.match(/(\d{4})\s*[\/.\-年]\s*(\d{1,2})(?:\s*[\/.\-月]\s*(\d{1,2}))?\s*日?/);
+  if(!m){keep.push(L);notes.push('日付が読めません：'+raw);return}
+  const y=+m[1],mo=+m[2],d=+m[3]||0;if(mo<1||mo>12||d>31){keep.push(L);notes.push('日付が正しくありません：'+raw);return}
+  const ds=m[1]+'-'+String(mo).padStart(2,'0')+(d?'-'+String(d).padStart(2,'0'):''),t=dtNk(raw.replace(m[0],''));
+  if(!t){keep.push(L);notes.push('タイトルがありません：'+raw);return}
+  let hit=idx.filter(a=>a[1]==t);if(!hit.length){const p=idx.filter(a=>a[1]&&(a[1].includes(t)||t.includes(a[1])));if(p.length==1)hit=p;else if(p.length>1){keep.push(L);notes.push('複数の作品に当てはまります：'+raw+'（'+p.slice(0,3).map(a=>a[0].t).join(' / ')+(p.length>3?' ほか':'')+'）');return}}
+  if(!hit.length){keep.push(L);notes.push('該当する作品がありません：'+raw);return}
+  hit.forEach(([i])=>{i.dt=ds;delete i.dta;delete i.dts});ok++});
+ if(ok){mk();render()}DTQ=keep.join('\n');DTM=(total?ok+'件 反映しました。':'')+(notes.length?'\n残った行：'+notes.length+'件\n'+notes.join('\n'):(total?'\nすべて反映できました。':''));dtSheet();if(ok)toast(ok+'件 日付を入れました')}
 function txtSheet(){const ck=(k,t)=>`<label style="display:flex;align-items:center;gap:8px;margin:6px 0;color:inherit;font-size:14px"><input type="checkbox" data-tx="${k}" ${TXO[k]?'checked':''} style="width:auto;min-height:0"> ${t}</label>`;
  sheet(`${xbtn()}<h2>リストをテキストで出力</h2><div class="row" style="margin:0 0 6px"><button class="chip ${TXO.w?'':'on'}" data-txl="0">所持リスト</button><button class="chip ${TXO.w?'on':''}" data-txl="1">求めリスト</button></div><p class="hint">選んだリストの全件を、ジャンルごとにまとめた文章にします。リンクや配布の情報は含みません。</p>
  ${ck('p','出演者を付ける')}${ck('k','収録内容を付ける（長くなります）')}${ck('n','メモを付ける')}
@@ -819,7 +833,7 @@ async function nxCopy(){const t=(NX.f=='csv'?nxCsv():nxMd()).replace(/^﻿/,''),
 function nxDl(){if(NX.f=='zip'){const a=document.createElement('a');a.href=URL.createObjectURL(nxZip(nxFiles()));a.download='notion-所持リスト-'+new Date().toISOString().slice(0,10)+'.zip';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return}const c=NX.f=='csv',a=document.createElement('a');a.href=URL.createObjectURL(new Blob([nxOut()],{type:c?'text/csv;charset=utf-8':'text/markdown;charset=utf-8'}));a.download='notion-list-'+new Date().toISOString().slice(0,10)+(c?'.csv':'.md');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 function txtDl(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txtAll()],{type:'text/plain;charset=utf-8'}));a.download='list-'+new Date().toISOString().slice(0,10)+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 function adminMenu(){
- sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="txt">所持・求めリストをテキストで出力</button><button data-a="nx">Notionにまとめる</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="sgs">ジャンル別の共有リンク</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
+ sheet(`${xbtn()}<h2>管理</h2>${!S?'':`<div class="row" style="margin-top:0"><button class="${ed?'on':''}" data-a="ed">${ed?'編集モード：ON（タップでOFF）':'編集モードにする'}</button><button data-a="txt">所持・求めリストをテキストで出力</button><button data-a="dtb">日付をまとめて入れる</button><button data-a="nx">Notionにまとめる</button><button data-a="sh">所持リストの共有リンクをコピー</button><button data-a="sgs">ジャンル別の共有リンク</button><button data-a="shk">とれたて関ジュースのみの共有リンクをコピー</button><button data-a="lo">ログアウト</button></div>
  ${ed?`<div class="fg"><label>サイト名</label><input data-ti value="${e(D.title)}">
  <label>共有ページの補足（共有リンクの「使い方」で、イラストの下に表示。空欄なら何も出しません）</label><textarea data-pg="share" style="min-height:140px" placeholder="例：配布のお願い、お問い合わせ先など">${e((D.pages&&D.pages.share)||'')}</textarea>
  <details class="mt"><summary>グループをテキストで編集（上級者向け）</summary><div class="in"><label>1行に1グループ　「グループ名：メンバー,メンバー」</label><textarea data-gr style="min-height:120px">${e(Object.entries(D.groups).map(([g,m])=>g+'：'+m.join(',')).join('\n'))}</textarea></div></details></div>
@@ -978,7 +992,7 @@ document.addEventListener('click',async t=>{if(t.target.id=='sh'){closeSheet();r
  else if(d.a=='pw'){em=$('#em').value.trim();x.disabled=true;x.textContent='確認中…';try{const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:em,password:$('#pw').value})});if(r.ok){ses(await r.json());adminMenu();render()}else{let m='';try{const j=await r.json();m=j.error_description||j.msg||j.message||j.error||''}catch(z){}alert('ログインできません（'+r.status+'）'+(m?'\n'+m:''))}}catch(z){alert('通信に失敗しました')}if(x.isConnected){x.disabled=false;x.textContent='ログイン'}}
  else if(d.a=='lo'){out();closeSheet();render()}
  else if(d.a=='txt'){if(!VW)txtSheet()}
- else if(d.a=='nx')nxSheet();else if(d.nxf!==undefined){NX.f=d.nxf;nxUp()}else if(d.nx!==undefined){NX[d.nx]=x.checked;nxUp()}else if(d.nxe!==undefined){const a=nxEach()[+d.nxe];if(a)nxCopyT(a[2])}else if(d.a=='nxcp')nxCopy();else if(d.a=='nxdl')nxDl();else if(d.a=='txcp')txtCopy()
+ else if(d.a=='nx')nxSheet();else if(d.a=='dtb')dtSheet();else if(d.a=='dtgo'){DTQ=$('#dtq').value;dtGo()}else if(d.nxf!==undefined){NX.f=d.nxf;nxUp()}else if(d.nx!==undefined){NX[d.nx]=x.checked;nxUp()}else if(d.nxe!==undefined){const a=nxEach()[+d.nxe];if(a)nxCopyT(a[2])}else if(d.a=='nxcp')nxCopy();else if(d.a=='nxdl')nxDl();else if(d.a=='txcp')txtCopy()
  else if(d.a=='txdl')txtDl()
  else if(d.txl!==undefined){TXO.w=d.txl=='1';txtSheet()}
  else if(d.tx!==undefined){TXO[d.tx]=x.checked;txtUp()}
