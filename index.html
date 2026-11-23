@@ -125,7 +125,9 @@ h1{margin-bottom:6px}.sub{margin-bottom:20px}
 .box.nt{white-space:normal;padding:0;overflow:hidden;line-height:1.75;word-break:break-word}
 .nt .nh0{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--bd,var(--ln))}.nt .nh0 b{margin:0}
 .nt .nb{padding:12px 16px 14px;font-size:14px}
+.nt .nb>*{margin:0}
 .nt .nb>*+*{margin-top:14px}
+.nt .nb>.sp{margin:0}
 .nt .nb a{text-underline-offset:3px;word-break:break-all}
 .nt .nsh{font-weight:700;font-size:14px;padding-left:9px;border-left:3px solid var(--fg);line-height:1.5;margin-top:16px}
 .nt .nb>.nsh:first-child{margin-top:0}
@@ -520,10 +522,11 @@ const cnt=k=>{const L=LISTS[k];return D.items.filter(i=>inL(i,L)&&gOf(i).some(g=
 
 const MG='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>';
 const menuH=a=>`<ul class="menu">${a.map((m,x)=>`<li><a href="${m[0]}"><span class="no">${String(x+1).padStart(2,'0')}</span><b>${e(m[1])}</b><span class="ct">${m[5]||e(m[3]||'')}</span>${m[2]?`<small>${e(m[2])}</small>`:''}</a>${m[4]||''}</li>`).join('')}</ul>`;
-const noticeH=s=>{const L=String(s||'').replace(/\r/g,'').trim().split('\n'),o=[];let p=[],u=[];
+const noticeH=s=>{const L=String(s||'').replace(/\r/g,'').trim().split('\n'),o=[];let p=[],u=[],bl=0;
 const fp=()=>{if(p.length){o.push('<p>'+p.join('<br>')+'</p>');p=[]}},fu=()=>{if(u.length){o.push('<ul>'+u.join('')+'</ul>');u=[]}};
 for(const r of L){const t=r.trim();let m;
- if(!t){fp();fu();continue}
+ if(!t){fp();fu();bl++;continue}
+ if(bl>1&&o.length)o.push(`<div class="sp" style="height:${(bl-1)*1.2}em"></div>`);bl=0;
  if(m=t.match(/^(\d{4}[\/.\-年]\d{1,2}[\/.\-月]\d{1,2}日?|\d{1,2}[\/月]\d{1,2}日?)\s*[:：]?\s*(.+)$/)){fp();u.push(`<li class="dt"><span class="d">${e(m[1])}</span><span class="t">${linkify(m[2])}</span></li>`);continue}
  if(m=t.match(/^[・•●○\-－*]\s*(.+)$/)){fp();u.push(`<li>${linkify(m[1])}</li>`);continue}
  if(/^(【.+】|[■◆◎▼▶□▽]\s*.+)$/.test(t)){fp();fu();o.push(`<div class="nsh">${linkify(t)}</div>`);continue}
