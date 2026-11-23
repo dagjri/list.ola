@@ -390,10 +390,10 @@ const kcmp=(x,y)=>{const a=x[1]||'~',b=y[1]||'~';return a==b?en(x)-en(y):a.local
 const mk=()=>touch();
 function shareL(){copy(location.href.split('#')[0].split('?')[0]+'?v=have#/have')}
 const gsUrl=g=>location.href.split('#')[0].split('?')[0]+'?v=have&g='+encodeURIComponent(g)+'#/have';
-function genreShare(){const L=LISTS.have,gs=L.g.filter(g=>D.items.some(i=>i.l=='have'&&gOf(i).includes(g)));
+function genreShare(){const L=LISTS.have,cn=g=>D.items.filter(i=>i.l=='have'&&gOf(i).includes(g)).length,gs=L.g.slice();
  sheet(`${xbtn()}<h2>ジャンル別の共有リンク</h2><p class="hint" style="line-height:1.8">選んだジャンルの作品だけが見られる共有リンクです。<b>Googleフォトなどのリンクは表示されません</b>（リンクも見せたいときは「所持リストの共有リンク」を使ってください）。</p>
- ${gs.map(g=>`<div class="row" style="align-items:center;flex-wrap:nowrap;margin:6px 0"><span style="flex:1;min-width:0">${e(g)}<small class="hint"> ${D.items.filter(i=>i.l=='have'&&gOf(i).includes(g)).length}件</small></span><button class="on" data-a="sgc" data-g="${e(g)}">リンクをコピー</button></div>`).join('')||'<p class="hint">所持リストに作品がありません</p>'}
- <details class="mt" style="margin-top:14px"><summary>複数のジャンルをまとめて共有する</summary><div class="in"><div class="sgr">${gs.map(g=>`<label class="chip" style="cursor:pointer"><input type="checkbox" data-sgm="${e(g)}" style="width:auto;min-height:0;margin-right:4px">${e(g)}</label>`).join('')}</div><div class="row"><button class="on" data-a="sgm">選んだジャンルのリンクをコピー</button></div></div></details>`)}
+ ${gs.map(g=>`<div class="row" style="align-items:center;flex-wrap:nowrap;margin:6px 0"><span style="flex:1;min-width:0">${e(g)}<small class="hint"> ${cn(g)}件</small></span>${cn(g)?`<button class="on" data-a="sgc" data-g="${e(g)}">リンクをコピー</button>`:'<button disabled>作品なし</button>'}</div>`).join('')||'<p class="hint">ジャンルがありません</p>'}
+ <details class="mt" style="margin-top:14px"><summary>複数のジャンルをまとめて共有する</summary><div class="in"><div class="sgr">${gs.filter(cn).map(g=>`<label class="chip" style="cursor:pointer"><input type="checkbox" data-sgm="${e(g)}" style="width:auto;min-height:0;margin-right:4px">${e(g)}</label>`).join('')}</div><div class="row"><button class="on" data-a="sgm">選んだジャンルのリンクをコピー</button></div></div></details>`)}
 function shareK(){copy(location.href.split('#')[0].split('?')[0]+'?v=kj#/have')}
 let KQ='',KL=80,KI=0,KP='',KPRE=false;const OTH='\u0001',CT=6,SHL=VW&&!SHK&&!SGN.length;
 const wsF=()=>f.w.flatMap(w=>D.groups[w]?[...desc(w)]:[w]).map(a=>a.toLowerCase());
@@ -736,7 +736,7 @@ function filt(){const L=curL();if(!L)return;PQ='';
 let TXO={p:true,k:false,n:false,w:false};
 function txtAll(){const W=TXO.w,LK=W?'want':'have',L=LISTS[LK],A=D.items.filter(i=>i.l==LK),gs=[...L.g,...[...new Set(A.map(i=>i.g))].filter(g=>!L.g.includes(g))],d=new Date();
  let o=`【${W?'求めリスト':'所持リスト'}】全${A.length}件（${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}時点）\n`;
- gs.forEach(g=>{const r=A.filter(i=>i.g==g);if(!r.length)return;o+=`\n■${g}（${r.length}）\n`;
+ gs.forEach(g=>{const r=A.filter(i=>gOf(i).includes(g));if(!r.length)return;o+=`\n■${g}（${r.length}）\n`;
   r.forEach(i=>{o+='・'+i.t+(TXO.p&&i.w.length?'　'+i.w.join('、'):'')+(W&&i.p?'　［求め度：'+i.p+'］':'')+'\n';
    if(TXO.n){const m=String(i.n||'').replace(/^【NEW】\s*/,'').replace(/\s*\n\s*/g,' ').trim();if(m)o+='　※'+m+'\n'}
    if(TXO.k)i.k.forEach(k=>{const a=k[0]||'',b=k[1]||'';if(a||b)o+='　- '+(b&&b!=a?(a?a+'（'+b+'）':b):a)+'\n'})})});
@@ -776,7 +776,7 @@ function nxBody(r){const X=NX;let o='';
   if(X.l)nxLinks(i).forEach(l=>{o+=`  - [${l.t||lkName(l.u,0,1)}](${l.u})\n`});
   if(X.k)nxKs(i).forEach(t=>{o+=`  - ${t}\n`})});
  return o+'\n'}
-function nxGroups(){const{A,gs}=nxData(),G=[],nw=A.filter(i=>/^【NEW】/.test(String(i.n||'')));if(nw.length)G.push(['New',nw]);gs.forEach(g=>{const r=A.filter(i=>i.g==g);if(r.length)G.push([g,r])});return{A,G}}
+function nxGroups(){const{A,gs}=nxData(),G=[],nw=A.filter(i=>/^【NEW】/.test(String(i.n||'')));if(nw.length)G.push(['New',nw]);gs.forEach(g=>{const r=A.filter(i=>gOf(i).includes(g));if(r.length)G.push([g,r])});return{A,G}}
 const nxDt=()=>{const d=new Date();return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()};
 const nxFn=g=>String(g).replace(/[\\\/:*?"<>|]/g,'_');
 const nxPr=t=>String(t||'').trim().replace(/\r?\n/g,'\n\n');
@@ -790,7 +790,7 @@ function nxExtra(){const X=NX.x,f=[],L=[];if(!X)return{f,L,pre:[],post:[]};const
   f.push(['所持リスト/必読.md',m]);pre.push(nxLk('必読',null,'所持リスト/'))}
  const W=D.items.filter(i=>i.l=='want');
  if(W.length){const gs=[...LISTS.want.g,...[...new Set(W.map(i=>i.g))].filter(g=>!LISTS.want.g.includes(g))];let m=`# ${LISTS.want.n}\n\n全${W.length}件\n\n`;
-  gs.forEach(g=>{const r=W.filter(i=>i.g==g);if(!r.length)return;m+=`## ${g}（${r.length}）\n\n`+r.map(i=>`- ${i.t}${NX.p&&i.w.length?'（'+i.w.join('、')+'）':''}`).join('\n')+'\n\n'});
+  gs.forEach(g=>{const r=W.filter(i=>gOf(i).includes(g));if(!r.length)return;m+=`## ${g}（${r.length}）\n\n`+r.map(i=>`- ${i.t}${NX.p&&i.w.length?'（'+i.w.join('、')+'）':''}`).join('\n')+'\n\n'});
   f.push(['所持リスト/'+nxFn(LISTS.want.n)+'.md',m]);post.push(nxLk(LISTS.want.n,W.length,'所持リスト/'))}
  const tm=(D.pages.terms||'').trim();
  if(tm){f.push(['所持リスト/利用上の注意.md','# 利用上の注意\n\n'+nxPr(tm)+'\n']);post.push(nxLk('利用上の注意',null,'所持リスト/'))}
@@ -812,7 +812,7 @@ function nxZip(files){const te=new TextEncoder(),T=(()=>{const t=[];for(let n=0;
  const cs=C.reduce((a,b)=>a+b.length,0),e=[];w32(e,0x06054b50);w16(e,0);w16(e,0);w16(e,files.length);w16(e,files.length);w32(e,cs);w32(e,off);w16(e,0);
  return new Blob([...P,...C,new Uint8Array(e)],{type:'application/zip'})}
 function nxCsv(){const{A,gs}=nxData(),q=t=>'"'+String(t==null?'':t).replace(/"/g,'""')+'"',H=['タイトル','ジャンル','出演者','画質','配布可否','配布方法','メモ','収録件数','収録内容','リンク'];
- const rows=[];gs.forEach(g=>A.filter(i=>i.g==g).forEach(i=>rows.push([i.t,g,i.w.join(', '),i.q||'',i.o||'',i.m||'',nxCl(i.n),i.k.length,nxKs(i).join('\n'),NX.l?nxLinks(i).map(l=>l.u).join('\n'):''])));
+ const rows=[];gs.forEach(g=>A.filter(i=>gOf(i).includes(g)).forEach(i=>rows.push([i.t,g,i.w.join(', '),i.q||'',i.o||'',i.m||'',nxCl(i.n),i.k.length,nxKs(i).join('\n'),NX.l?nxLinks(i).map(l=>l.u).join('\n'):''])));
  return'﻿'+[H,...rows].map(r=>r.map(q).join(',')).join('\r\n')}
 const nxOut=()=>NX.f=='csv'?nxCsv():(NX.f=='zip'||NX.f=='each')?nxTop():nxMd();
 const nxEach=()=>nxFiles().map(([n,t],x)=>[x,n.replace(/\.md$/,'').split('/').pop(),t]);
