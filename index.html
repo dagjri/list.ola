@@ -416,6 +416,8 @@ const kschips=i=>{const s=new Set(D.ksubs||KS0);i.k.map(kv).forEach(k=>{if(k[4])
 const bchips=(i,sub,id)=>{const s=new Set((sub?D.ksubs:D.kheads)||[]);i.k.map(kv).forEach(k=>{const v=sub?k[4]:(k[2]=='放送回'?'':k[2]);if(v)s.add(v)});return hsort([...s],i,sub).map(v=>`<button type="button" class="chip" data-kb="${id}|${e(v)}">${e(v)}</button>`).join('')};
 const qchips=i=>{const c=perf(i);i.w.forEach(w=>(D.groups[w]||[w]).forEach(a=>{c[a]=c[a]||0}));QW.forEach(a=>c[a]=c[a]||0);return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,60).map(a=>`<button type="button" class="chip ${QW.has(a[0])?'on':''}" data-qw="${e(a[0])}">${e(a[0])}</button>`).join('')};
 const hsort=(a,i,sub)=>{const pre=(sub?D.ksubs:D.kheads)||[],ko=i&&Array.isArray(i[sub?'kso':'ko'])?i[sub?'kso':'ko']:[],hr=h=>{const x=pre.indexOf(h);return x>=0?x:1e4+(h=='本編'?0:h.startsWith('特典')?1:2)},r=h=>{const x=ko.indexOf(h);return x>=0?x:1e3+hr(h)};return a.slice().sort((p,q)=>r(p)-r(q)||CO.compare(tk(p),tk(q)))},khOf=i=>hsort([...new Set(i.k.map(kv).map(k=>k[2]).filter(x=>x&&x!='放送回'))],i),ksOf=(i,g)=>hsort([...new Set(i.k.map(kv).filter(k=>!g||k[2]==g).map(k=>k[4]).filter(Boolean))],i,1);
+function syncW(i){if(!Array.isArray(i.w))i.w=[];if(i.wa&&JSON.stringify(i.w)!=JSON.stringify(i.ws)){delete i.wa;delete i.ws;return}
+ if(!i.wa&&i.w.length)return;const d=[...new Set((i.k||[]).flatMap(k=>castK(k)))];if(i.wa||!i.w.length){if(d.length){i.w=d;i.ws=[...d];i.wa=1}else if(i.wa){i.w=[];delete i.wa;delete i.ws}}}
 const castK=k=>{const m=(k[3]||'').match(/出演者[:：]\s*([^/]*)/);return m?m[1].split(/[,、，]/).map(a=>a.trim()).filter(Boolean):[]};
 const ovr=i=>{const s=[];i.w.forEach(w=>(D.groups[w]&&D.groups[w].length?leaves(w):[w]).forEach(a=>{if(!s.includes(a))s.push(a)}));return s};
 const kpc=i=>{const ov=ovr(i);if(!ov.length)return'';const cs={};let ot=0;i.k.map(kv).forEach(k=>{const c=castK(k),h=ov.filter(a=>c.includes(a));h.forEach(a=>cs[a]=(cs[a]||0)+1);if(!h.length)ot++});
@@ -438,7 +440,7 @@ function out(){clearTimeout(AT);S=null;ed=false;dirty=false;try{localStorage.rem
 const stTxt=()=>{const t=$('#ebt');if(t)t.textContent='編集モード'+(saving?'　保存中…':dirty?'　自動保存します…':'　✓自動保存済み');const u=$('#fst');if(u)u.textContent=saving?'保存中…':dirty?'●未保存':'✓保存済み'};
 let SNAP='';
 setInterval(()=>{try{if(!D||document.hidden)return;const j=JSON.stringify(D);if(!ed||VW||SNAP===''){SNAP=j;return}if(j!==SNAP){SNAP=j;if(!dirty||!AT)touch()}}catch(x){}},1000);
-function touch(){if(VW)return;dirty=true;ver++;const b=$('#sv');if(b)b.disabled=saving;stTxt();clearTimeout(AT);AT=setTimeout(()=>saveDB(true),1200)}
+function touch(){if(VW)return;D&&D.items.forEach(syncW);dirty=true;ver++;const b=$('#sv');if(b)b.disabled=saving;stTxt();clearTimeout(AT);AT=setTimeout(()=>saveDB(true),1200)}
 async function saveDB(auto){clearTimeout(AT);if(VW)return;
  if(saving){AT=setTimeout(()=>saveDB(auto),700);return}
  if(auto===true&&!dirty)return;
@@ -460,14 +462,14 @@ function fnd(id,a=D.notes,p=null){for(const n of a){if(n.id==id)return{n,p,a};co
 
 /* ================= データ ================= */
 function norm(x){x=x||{};const d={...DEF,...x};d.pages={...DEF.pages,...(x.pages||{})};d.groups=x.groups||{};d.gy=(x.gy&&typeof x.gy=='object'&&!Array.isArray(x.gy))?Object.fromEntries(Object.entries(x.gy).filter(([k,v])=>typeof v=='string'&&v)):{};d.afg=Array.isArray(x.afg)?x.afg.filter(a=>a&&typeof a=='string'):[];d.pin=Array.isArray(x.pin)?x.pin.filter(a=>a&&typeof a=='string'):[];d.solo=Array.isArray(x.solo)?x.solo.filter(a=>a&&typeof a=='string'&&!Object.values(d.groups).some(m=>Array.isArray(m)&&m.includes(a))):[];['KAMIGATABOYZ','Lilかんさい','SnowMan','SexyZone','関西Jr.','合同'].forEach(g=>{if(!d.groups[g])d.groups[g]=[]});d.links=x.links||[];d.notes=nn(x.notes);
- d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(i.g=='円盤・特典')i.g='シングル・アルバム特典';if(i.p=='あれば')i.p='要相談';if(!OWN.includes(i.o))i.o='';if(!EXO.includes(i.ex))i.ex='';if(VW){i.r='';i.c='';i.o='';i.m=''}i.dl=Array.isArray(i.dl)?i.dl.map(l=>({t:l.t||'',u:l.u||''})):[];return i});{const gs=(Array.isArray(x.genres)?x.genres:[]).filter(a=>a&&typeof a=='string');if(!gs.length)gs.push(...GENRES0);else if(!x.gv&&!gs.includes('特典')){const q=gs.indexOf('シングル・アルバム特典');gs.splice(q<0?gs.length:q+1,0,'特典')}d.gv=1;WONLY.forEach(w=>{if(!gs.includes(w))gs.push(w)});d.items.forEach(i=>{if(i.rel){i.ga=[...(Array.isArray(i.ga)?i.ga:[]),'関連'];delete i.rel}i.ga=(Array.isArray(i.ga)?i.ga:[]).filter(a=>a&&typeof a=='string'&&a!=i.g);i.ga=[...new Set(i.ga)];if(!i.ga.length)delete i.ga;gOf(i).forEach(g=>{if(!gs.includes(g))gs.push(g)})});GENRES.splice(0,GENRES.length,...gs);d.genres=GENRES;d.kheads=Array.isArray(x.kheads)?x.kheads.filter(a=>a&&typeof a=='string'):[...KH0];d.ksubs=Array.isArray(x.ksubs)?x.ksubs.filter(a=>a&&typeof a=='string'):[...KS0];d.grules=Array.isArray(x.grules)?x.grules.filter(r=>r&&typeof r.k=='string'&&typeof r.g=='string').map(r=>({k:r.k,g:r.g})):(GENRES.includes('特典')?[{k:'特典',g:'特典'}]:[]);d.items.forEach(i=>{if(VW){i.rh=undefined;delete i.rh}else migR(i,d)})}
+ d.items=(x.items||[]).map(i=>{i={t:'',g:'ドラマ',s:'',w:[],n:'',o:'',m:'',q:'',r:'',c:'',p:'',y:'',k:[],l:'have',...i};if(i.g=='円盤・特典')i.g='シングル・アルバム特典';if(i.p=='あれば')i.p='要相談';if(!OWN.includes(i.o))i.o='';if(!EXO.includes(i.ex))i.ex='';if(VW){i.r='';i.c='';i.o='';i.m=''}i.dl=Array.isArray(i.dl)?i.dl.map(l=>({t:l.t||'',u:l.u||''})):[];return i});{const gs=(Array.isArray(x.genres)?x.genres:[]).filter(a=>a&&typeof a=='string');if(!gs.length)gs.push(...GENRES0);else if(!x.gv&&!gs.includes('特典')){const q=gs.indexOf('シングル・アルバム特典');gs.splice(q<0?gs.length:q+1,0,'特典')}d.gv=1;WONLY.forEach(w=>{if(!gs.includes(w))gs.push(w)});d.items.forEach(i=>{if(i.rel){i.ga=[...(Array.isArray(i.ga)?i.ga:[]),'関連'];delete i.rel}i.ga=(Array.isArray(i.ga)?i.ga:[]).filter(a=>a&&typeof a=='string'&&a!=i.g);i.ga=[...new Set(i.ga)];if(!i.ga.length)delete i.ga;gOf(i).forEach(g=>{if(!gs.includes(g))gs.push(g)})});GENRES.splice(0,GENRES.length,...gs);d.genres=GENRES;d.kheads=Array.isArray(x.kheads)?x.kheads.filter(a=>a&&typeof a=='string'):[...KH0];d.ksubs=Array.isArray(x.ksubs)?x.ksubs.filter(a=>a&&typeof a=='string'):[...KS0];d.grules=Array.isArray(x.grules)?x.grules.filter(r=>r&&typeof r.k=='string'&&typeof r.g=='string').filter(r=>x.grv||!(r.k=='特典'&&r.g=='特典')).map(r=>({k:r.k,g:r.g})):[];d.grv=1;d.items.forEach(i=>{if(VW){i.rh=undefined;delete i.rh}else migR(i,d)})}
  if(SGN.length){d.items=d.items.filter(i=>i.l=='have'&&gOf(i).some(g=>SGN.includes(g)));LISTS.have.g=GENRES.filter(g=>SGN.includes(g));LISTS.have.n=SGN.join('・');LISTS.have.sub='所持リスト'}
  if(SHK){d.items=d.items.filter(i=>i.l=='have'&&i.t.includes(SHK));LISTS.have.g=GENRES.filter(g=>d.items.some(i=>gOf(i).includes(g)))}return d}
 async function init(){try{S=JSON.parse(localStorage.getItem(SK))}catch(x){}
  let raw=null;
  if(C.url){try{const j=await(await sb('/rest/v1/archive?id=eq.1&select=data')).json();if(j&&j[0])raw=j[0].data}catch(x){}}
  if(!raw)try{raw=await(await fetch('data.json')).json()}catch(x){$('#app').innerHTML='<p class="empty">data.json を読み込めません。公開されたURLで開いてください。</p>';return}
- D=norm(raw);initNew();if(pgDedupe())touch();render()}
+ D=norm(raw);initNew();let sc=false;D.items.forEach(i=>{const b=JSON.stringify(i.w);syncW(i);if(JSON.stringify(i.w)!=b)sc=true});if(pgDedupe()||sc)touch();render()}
 
 /* ================= 出演者（グループ→メンバー） ================= */
 const pruneSolo=()=>{D.solo=(D.solo||[]).filter(n=>!Object.values(D.groups).some(m=>m.includes(n)))};
@@ -583,20 +585,20 @@ function lbody(k,srch){const L=LISTS[k],base=D.items.filter(i=>inL(i,L)&&gOf(i).
  let rows=none?[]:D.items.map((x,n)=>[x,n]).filter(([i])=>match(i,L,true));
  const MD=effSort(),G0=(tab=='すべて'||tab=='New')&&L.g.length>1,G=G0&&MD=='std',gi=a=>L.g.indexOf(a[0].g),kc=(a,b)=>CO.compare(tk(yk(a[0])),tk(yk(b[0])));
  const OT='その他（個人・出演者なし）';let hk=null,PL='';
- const RT=new Set(roots()),cc=new Map(),gkf=r=>{const i=r[0];let v=cc.get(i);if(v===undefined){const c=new Set(),isP=g=>D.groups[g]&&D.groups[g].some(m=>D.groups[m]);let par=false;for(const w of i.w){if(D.groups[w]){if(isP(w))par=true;else c.add(w)}else Object.keys(D.groups).forEach(g=>{if(D.groups[g].includes(w)){if(isP(g))par=true;else c.add(g)}})}v=c.size?[...c].sort(gCmp)[0]:par?'合同・複数グループ':OT;cc.set(i,v)}return v};
- if(MD=='grp')hk=gkf;
+ const RT=new Set(roots()),cc=new Map(),gks=i=>{let v=cc.get(i);if(v===undefined){const c=new Set(),isP=g=>D.groups[g]&&D.groups[g].some(m=>D.groups[m]);let par=false;for(const w of i.w){if(D.groups[w]){if(isP(w))par=true;else c.add(w)}else Object.keys(D.groups).forEach(g=>{if(D.groups[g].includes(w)){if(isP(g))par=true;else c.add(g)}})}v=c.size?[...c].sort(gCmp):[par?'合同・複数グループ':OT];cc.set(i,v)}return v},gkf=r=>gks(r[0])[0];
+ if(MD=='grp'){rows=rows.flatMap(r=>gks(r[0]).map(k=>[r[0],r[1],k]));hk=r=>r[2]}
  else if(MD=='prf'){const rs=SORT.pw.map(relOf);PL=SORT.pw.join('・')+' の作品';hk=r=>rs.some(x=>hitWr(r[0],x))?PL:'そのほか'}
  rows.sort((a,b)=>{if(MD=='add')return a[1]-b[1];if(MD=='addo')return b[1]-a[1];if(MD=='kana')return kc(a,b);if(hk){const x=hk(a),y=hk(b);if(x!=y){if(MD=='prf')return x==PL?-1:1;if(x==OT)return 1;if(y==OT)return -1;return gCmp(x,y)}}if(MD=='std'&&G0){const d=gi(a)-gi(b);if(d)return d;const x=gkf(a),y=gkf(b);if(x!=y){if(x==OT)return 1;if(y==OT)return -1;return CO.compare(x,y)}}return(G0?gi(a)-gi(b):0)||(L.l=='want'?PI(a[0].p)-PI(b[0].p):0)||kc(a,b)});
- VIS=rows.map(r=>r[1]);
+ VIS=[...new Set(rows.map(r=>r[1]))];
  const chips=[...(f.q&&!srch?[['q',f.q]]:[]),...f.g.map(v=>['g',v]),...f.w.map(v=>['w',v]),...f.o.map(v=>['o',v])];
  let h='',last='',lg='';const PG=(MD=='prf'||MD=='grp')&&G0;
- rows.slice(0,lim).forEach(([i,n])=>{const gk=hk?hk([i,n]):(G?i.g:null);if(gk!==null&&gk!=last){last=gk;lg='';h+=`<h3 class="gh">${e(gk)}</h3>`}
+ rows.slice(0,lim).forEach(r=>{const i=r[0],n=r[1],gk=hk?hk(r):(G?i.g:null);if(gk!==null&&gk!=last){last=gk;lg='';h+=`<h3 class="gh">${e(gk)}</h3>`}
   if(PG&&i.g!=lg){lg=i.g;h+=`<h3 class="gh" style="font-size:.85em;opacity:.7">${e(i.g)}</h3>`}
   h+=rowH(i,n)});
  return `${L.g.length>1&&!none?`<div class="tabs">${tabs.map(t=>`<button class="${t==tab?'on':''}" data-tab="${e(t)}">${e(t)}<i>${t=='すべて'?mm.length:t=='New'?mm.filter(i=>i.n.startsWith('【NEW】')).length:mm.filter(i=>gOf(i).includes(t)).length}</i></button>`).join('')}</div>`:''}
  <div class="ch">${chips.map(([c,v])=>`<span data-x="${c}|${e(v)}">${e(v)} ✕</span>`).join('')}</div>
  ${!none&&rows.length?`<p class="row" style="margin:10px 0 0"><button data-a="srt">並び替え：${e(sortLabel())}</button></p>`:''}
- <p class="hint">${rows.length?rows.length+'件　行をタップで詳細':''}${ed?'　編集モード：行をタップで編集':''}</p>
+ <p class="hint">${rows.length?new Set(rows.map(r=>r[1])).size+'件　行をタップで詳細':''}${ed?'　編集モード：行をタップで編集':''}</p>
  
  ${ed&&!srch?`<p><button data-a="add">＋この一覧に追加</button> <button data-a="selm">${SM?'選択を終了':'選択して一括編集'}</button></p>`:''}${h||(none?'<p class="empty">キーワードを入れるか、「絞り込み」で出演者・ジャンルを選んでください</p>':'<p class="empty">該当するものがありません</p>')}${rows.length>lim?'<p><button id="mo">もっと見る</button></p>':''}`}
 
