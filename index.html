@@ -122,6 +122,20 @@ header{border-bottom-color:var(--ln)}
 h1{margin-bottom:6px}.sub{margin-bottom:20px}
 .box{border-color:var(--bd);border-radius:var(--rad);background:var(--soft);padding:14px 16px}
 .box b{border-radius:999px;padding:0 8px}
+.box.nt{white-space:normal;padding:0;overflow:hidden;line-height:1.75;word-break:break-word}
+.nt .nh0{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--bd,var(--ln))}.nt .nh0 b{margin:0}
+.nt .nb{padding:12px 16px 14px;font-size:14px}
+.nt .nb>*+*{margin-top:14px}
+.nt .nb a{text-underline-offset:3px;word-break:break-all}
+.nt .nsh{font-weight:700;font-size:14px;padding-left:9px;border-left:3px solid var(--fg);line-height:1.5;margin-top:16px}
+.nt .nb>.nsh:first-child{margin-top:0}
+.nt ul{list-style:none;margin:0;padding:0}
+.nt li{position:relative;padding:0 0 0 1.1em}
+.nt li+li{margin-top:5px}
+.nt li::before{content:"";position:absolute;left:.2em;top:.8em;width:5px;height:5px;border-radius:50%;background:var(--fg)}
+.nt li.dt{padding-left:0;display:flex;gap:10px;align-items:baseline}.nt li.dt::before{display:none}
+.nt li.dt .d{flex:none;font-size:12px;color:var(--mu);font-variant-numeric:tabular-nums;min-width:3.6em;letter-spacing:.02em}
+.nt li.dt .t{flex:1;min-width:0}
 .menu{border-top:0}.menu li{margin:0 0 10px}
 .menu a{border:1px solid var(--bd);border-radius:var(--rad);padding:14px 16px;column-gap:12px}
 .tabs{border-bottom:0;gap:8px;padding:2px 18px 12px}
@@ -506,9 +520,18 @@ const cnt=k=>{const L=LISTS[k];return D.items.filter(i=>inL(i,L)&&gOf(i).some(g=
 
 const MG='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>';
 const menuH=a=>`<ul class="menu">${a.map((m,x)=>`<li><a href="${m[0]}"><span class="no">${String(x+1).padStart(2,'0')}</span><b>${e(m[1])}</b><span class="ct">${m[5]||e(m[3]||'')}</span>${m[2]?`<small>${e(m[2])}</small>`:''}</a>${m[4]||''}</li>`).join('')}</ul>`;
+const noticeH=s=>{const L=String(s||'').replace(/\r/g,'').trim().split('\n'),o=[];let p=[],u=[];
+const fp=()=>{if(p.length){o.push('<p>'+p.join('<br>')+'</p>');p=[]}},fu=()=>{if(u.length){o.push('<ul>'+u.join('')+'</ul>');u=[]}};
+for(const r of L){const t=r.trim();let m;
+ if(!t){fp();fu();continue}
+ if(m=t.match(/^(\d{4}[\/.\-年]\d{1,2}[\/.\-月]\d{1,2}日?|\d{1,2}[\/月]\d{1,2}日?)\s*[:：]?\s*(.+)$/)){fp();u.push(`<li class="dt"><span class="d">${e(m[1])}</span><span class="t">${linkify(m[2])}</span></li>`);continue}
+ if(m=t.match(/^[・•●○\-－*]\s*(.+)$/)){fp();u.push(`<li>${linkify(m[1])}</li>`);continue}
+ if(/^(【.+】|[■◆◎▼▶□▽]\s*.+)$/.test(t)){fp();fu();o.push(`<div class="nsh">${linkify(t)}</div>`);continue}
+ fu();p.push(linkify(t))}
+fp();fu();return `<div class="box nt"><div class="nh0"><b>お知らせ</b></div><div class="nb">${o.join('')}</div></div>`};
 function pTop(){
  const menu=[['#/must','必読','ご利用の前にお読みください',''],['#/have',LISTS.have.n,'ドラマ・映画・バラエティ・ライブ・円盤・音源など　ジャンル別',cnt('have')+'件'],['#/want',LISTS.want.n,LISTS.want.d,cnt('want')+'件'],['#/fav','お気に入り','ログイン不要・この端末に保存',cnt('fav')+'件'],['#/search','検索','題名・出演者・内容から探す','','',MG]];
- return `${ed?`<div class="fg"><label>お知らせ（空にすると非表示）</label><textarea data-nt style="min-height:80px;margin-bottom:20px">${e(D.notice)}</textarea></div>`:D.notice?`<div class="box"><b>お知らせ</b>${e(D.notice)}</div>`:''}
+ return `${ed?`<div class="fg"><label>お知らせ（空にすると非表示）</label><textarea data-nt style="min-height:120px;margin-bottom:6px">${e(D.notice)}</textarea></div><p class="hint" style="margin:0 0 20px;line-height:1.8">空行で段落が分かれます。<b>【見出し】</b>や<b>■見出し</b>は太字の見出しに、<b>・項目</b>は箇条書きに、<b>11/23 内容</b>のように日付で始めると日付つきの一覧になります。URLは自動でリンクになります。</p>`:D.notice&&D.notice.trim()?noticeH(D.notice):''}
  ${menuH(menu)}`}
 
 const nlist=(arr,pid)=>menuH(arr.map((n,x)=>['#/n/'+n.id,n.t||'（無題）','',n.c.length?n.c.length+'件':'',ed?`<div class="nc"><button data-na="up" data-id="${n.id}" ${x?'':'disabled'}>↑</button><button data-na="dn" data-id="${n.id}" ${x<arr.length-1?'':'disabled'}>↓</button><button data-na="rm" data-id="${n.id}">削除</button></div>`:'']))+(ed?`<p style="margin:0"><button data-na="add" data-id="${pid}">＋ノートを追加</button></p>`:'');
